@@ -9,6 +9,9 @@
 ADWCharacter::ADWCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	bUseControllerRotationYaw = true;
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationRoll = false;
 }
 
 

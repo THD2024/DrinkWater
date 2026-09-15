@@ -27,7 +27,25 @@ protected:
 	
 	virtual void SetupInputComponent() override;
 	
+	/*Movement*/
+	void HandleMove(const FInputActionValue& Value);
+	void HandleJump(const FInputActionValue& Value);
+	void HandleCrouch(const FInputActionValue& Value);
+	void HandleLook(const FInputActionValue& Value);
+	
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInputMappingContext> DWContext;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UInputAction> Move;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UInputAction> Jump;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UInputAction> Crouch;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UInputAction> Look;
 };
