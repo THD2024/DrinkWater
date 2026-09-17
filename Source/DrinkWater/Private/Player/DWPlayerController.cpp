@@ -35,6 +35,8 @@ void ADWPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(Move,ETriggerEvent::Triggered,this,&ADWPlayerController::HandleMove);
 		EnhancedInputComponent->BindAction(Jump,ETriggerEvent::Triggered,this,&ADWPlayerController::HandleJump);
 		EnhancedInputComponent->BindAction(Crouch,ETriggerEvent::Triggered,this,&ADWPlayerController::HandleCrouch);
+		EnhancedInputComponent->BindAction(Look,ETriggerEvent::Triggered,this,&ADWPlayerController::HandleLook);
+	
 	}
 }
 

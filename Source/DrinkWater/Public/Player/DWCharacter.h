@@ -36,12 +36,9 @@ public:
 	
 private:
 	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<USpringArmComponent> SpringArmComponent;
-	
-	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UCameraComponent> CameraComponent;
 	
 	UPROPERTY(EditDefaultsOnly)
-	FName BoneName = FName();
+	TObjectPtr<USkeletalMeshComponent> FirstPersonMesh;
 
 };
