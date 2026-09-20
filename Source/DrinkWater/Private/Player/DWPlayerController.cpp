@@ -23,7 +23,6 @@ void ADWPlayerController::BeginPlay()
 void ADWPlayerController::AcknowledgePossession(class APawn* P)
 {
 	Super::AcknowledgePossession(P);
-	
 }
 
 
@@ -53,8 +52,8 @@ void ADWPlayerController::HandleMove(const FInputActionValue& Value)
 	
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-	ControllerPawn->AddMovementInput(ForwardDirection,MoveVector.Y);
-	ControllerPawn->AddMovementInput(RightDirection,MoveVector.X);
+	ControllerPawn->AddMovementInput(ForwardDirection,MoveVector.Y );
+	ControllerPawn->AddMovementInput(RightDirection,MoveVector.X );
 	
 }
 
@@ -77,6 +76,6 @@ void ADWPlayerController::HandleCrouch(const FInputActionValue& Value)
 void ADWPlayerController::HandleLook(const FInputActionValue& Value)
 {
 	const FVector2D LookVector = Value.Get<FVector2D>();
-	AddYawInput(LookVector.X);
-	AddPitchInput(LookVector.Y);
+	AddYawInput(LookVector.X * MoveSensitivity);
+	AddPitchInput(LookVector.Y * MoveSensitivity);
 }

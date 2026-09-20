@@ -7,7 +7,7 @@
 #include "Camera/CameraComponent.h"
 #include "Core/DWAbilitySystemComponent.h"
 #include "GameFramework/Character.h"
-#include "GameFramework/SpringArmComponent.h"
+
 #include "DWCharacter.generated.h"
 
 UCLASS()
@@ -39,6 +39,6 @@ private:
 	TObjectPtr<UCameraComponent> CameraComponent;
 	
 	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<USkeletalMeshComponent> FirstPersonMesh;
-
+	FName SocketName = FName();
+	
 };

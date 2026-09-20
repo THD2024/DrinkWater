@@ -48,4 +48,7 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInputAction> Look;
+	
+	UPROPERTY(EditDefaultsOnly)
+	float MoveSensitivity = 1.f;
 };

@@ -12,13 +12,10 @@ ADWCharacter::ADWCharacter()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 	
-	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(FName("FirstPersonMesh"));
-	FirstPersonMesh->SetupAttachment(RootComponent);
 	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
-	CameraComponent->SetupAttachment(FirstPersonMesh);
-	CameraComponent->SetRelativeLocation(FVector(8.f,0.f,0.f));
-	CameraComponent->bUsePawnControlRotation = false;//交给弹簧臂
+	CameraComponent->bUsePawnControlRotation = true;
+	CameraComponent->SetupAttachment(GetMesh(),SocketName);
 	
 }
 
@@ -27,6 +24,7 @@ void ADWCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	InitInfo();//单机情况下，只需要在beginplay中进行actorinfo。
+	
 }
 
 
