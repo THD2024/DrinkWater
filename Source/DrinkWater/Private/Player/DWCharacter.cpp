@@ -13,10 +13,6 @@ ADWCharacter::ADWCharacter()
 	bUseControllerRotationRoll = false;
 	
 	
-	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
-	CameraComponent->bUsePawnControlRotation = true;
-	CameraComponent->SetupAttachment(GetMesh(),SocketName);
-	
 }
 
 

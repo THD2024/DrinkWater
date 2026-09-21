@@ -19,6 +19,7 @@ public:
 	
 	ADWCharacter();
 
+	
 protected:
 	virtual void BeginPlay() override;
 	
@@ -28,17 +29,12 @@ protected:
 	
 	UPROPERTY()
 	TObjectPtr<UDWAbilitySystemComponent> DwAbilitySystemComponent;
+
 	
 public:	
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
-private:
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UCameraComponent> CameraComponent;
-	
-	UPROPERTY(EditDefaultsOnly)
-	FName SocketName = FName();
 	
 };
