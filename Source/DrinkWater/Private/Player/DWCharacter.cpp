@@ -15,6 +15,11 @@ ADWCharacter::ADWCharacter()
 	
 }
 
+void ADWCharacter::ExecutePhysicalJump()
+{
+	Jump();
+}
+
 
 void ADWCharacter::BeginPlay()
 {

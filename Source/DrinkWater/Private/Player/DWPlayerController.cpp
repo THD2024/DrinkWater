@@ -5,6 +5,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/Character.h"
+#include "Player/DWCharacter.h"
 
 
 ADWPlayerController::ADWPlayerController()
@@ -59,11 +60,15 @@ void ADWPlayerController::HandleMove(const FInputActionValue& Value)
 
 void ADWPlayerController::HandleJump(const FInputActionValue& Value)
 {
-	if (GetCharacter())
+	if (ADWCharacter* DWPlayer = Cast<ADWCharacter>(GetCharacter()))
 	{
-		GetCharacter()->Jump();//内置跳跃
+		if (DWPlayer->JumpMontage)
+		{
+			DWPlayer->PlayAnimMontage(DWPlayer->JumpMontage);
+		}
 	}
 }
+
 
 void ADWPlayerController::HandleCrouch(const FInputActionValue& Value)
 {

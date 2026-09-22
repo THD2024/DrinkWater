@@ -19,6 +19,10 @@ public:
 	
 	ADWCharacter();
 
+	void ExecutePhysicalJump();
+	
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UAnimMontage> JumpMontage;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -29,7 +33,8 @@ protected:
 	
 	UPROPERTY()
 	TObjectPtr<UDWAbilitySystemComponent> DwAbilitySystemComponent;
-
+	
+	
 	
 public:	
 	virtual void Tick(float DeltaTime) override;
