@@ -5,6 +5,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Player/DWCharacter.h"
 
 
@@ -33,10 +34,11 @@ void ADWPlayerController::SetupInputComponent()
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
 	{
 		EnhancedInputComponent->BindAction(Move,ETriggerEvent::Triggered,this,&ADWPlayerController::HandleMove);
-		EnhancedInputComponent->BindAction(Jump,ETriggerEvent::Triggered,this,&ADWPlayerController::HandleJump);
-		EnhancedInputComponent->BindAction(Crouch,ETriggerEvent::Triggered,this,&ADWPlayerController::HandleCrouch);
+		EnhancedInputComponent->BindAction(Jump,ETriggerEvent::Started,this,&ADWPlayerController::HandleJump);
+		EnhancedInputComponent->BindAction(Crouch,ETriggerEvent::Started,this,&ADWPlayerController::HandleCrouch);
 		EnhancedInputComponent->BindAction(Look,ETriggerEvent::Triggered,this,&ADWPlayerController::HandleLook);
-	
+		EnhancedInputComponent->BindAction(Run,ETriggerEvent::Triggered,this,&ADWPlayerController::HandleRun);
+		EnhancedInputComponent->BindAction(Run,ETriggerEvent::Completed,this,&ADWPlayerController::HandleRunEnd);
 	}
 }
 
@@ -62,9 +64,15 @@ void ADWPlayerController::HandleJump(const FInputActionValue& Value)
 {
 	if (ADWCharacter* DWPlayer = Cast<ADWCharacter>(GetCharacter()))
 	{
-		if (DWPlayer->JumpMontage)
+		if (DWPlayer->bIsCrouched)
+		{
+			GetCharacter()->UnCrouch();
+			return;
+		}
+		if (DWPlayer->JumpMontage && DWPlayer->IsJumpStarting == false)
 		{
 			DWPlayer->PlayAnimMontage(DWPlayer->JumpMontage);
+			DWPlayer->IsJumpStarting = true;
 		}
 	}
 }
@@ -74,7 +82,14 @@ void ADWPlayerController::HandleCrouch(const FInputActionValue& Value)
 {
 	if (GetCharacter())
 	{
-		GetCharacter()->Crouch();//内置蹲着
+		if (GetCharacter()->bIsCrouched)
+		{
+			GetCharacter()->UnCrouch();
+		}
+		else
+		{
+			GetCharacter()->Crouch();//内置蹲着
+		}
 	}
 }
 
@@ -83,4 +98,20 @@ void ADWPlayerController::HandleLook(const FInputActionValue& Value)
 	const FVector2D LookVector = Value.Get<FVector2D>();
 	AddYawInput(LookVector.X * MoveSensitivity);
 	AddPitchInput(LookVector.Y * MoveSensitivity);
+}
+
+void ADWPlayerController::HandleRun(const FInputActionValue& Value)
+{
+	if (GetCharacter() && GetCharacter()->GetCharacterMovement())
+	{
+		GetCharacter()->GetCharacterMovement()->MaxWalkSpeed = PlayerMaxWalkSpeed;
+	}
+}
+
+void ADWPlayerController::HandleRunEnd(const FInputActionValue& Value)
+{
+	if (GetCharacter() && GetCharacter()->GetCharacterMovement())
+	{
+		GetCharacter()->GetCharacterMovement()->MaxWalkSpeed = PlayerNormalWalkSpeed;
+	}
 }

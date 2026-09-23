@@ -24,6 +24,9 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UAnimMontage> JumpMontage;
 	
+	UPROPERTY(BlueprintReadWrite)
+	bool IsJumpStarting = false;
+	
 protected:
 	virtual void BeginPlay() override;
 	

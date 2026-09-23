@@ -18,6 +18,7 @@ class DRINKWATER_API ADWPlayerController : public APlayerController
 public:
 	
 	ADWPlayerController();
+
 	
 protected:
 	
@@ -32,6 +33,8 @@ protected:
 	void HandleJump(const FInputActionValue& Value);
 	void HandleCrouch(const FInputActionValue& Value);
 	void HandleLook(const FInputActionValue& Value);
+	void HandleRun(const FInputActionValue& Value);
+	void HandleRunEnd(const FInputActionValue& Value);
 	
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -50,5 +53,14 @@ private:
 	TObjectPtr<UInputAction> Look;
 	
 	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UInputAction> Run;
+	
+	UPROPERTY(EditDefaultsOnly)
 	float MoveSensitivity = 1.f;
+	
+	UPROPERTY(EditDefaultsOnly)
+	float PlayerMaxWalkSpeed = 300.f;
+	
+	UPROPERTY(EditDefaultsOnly)
+	float PlayerNormalWalkSpeed = 300.f;
 };
