@@ -21,11 +21,15 @@ public:
 
 	void ExecutePhysicalJump();
 	
+	bool GetJumpStatus(){return IsJumpStarting;}
+	
+	UFUNCTION(BlueprintCallable)
+	void SetJumpingStatus(bool InIsJumpStarting){ IsJumpStarting = InIsJumpStarting; }
+	
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UAnimMontage> JumpMontage;
 	
-	UPROPERTY(BlueprintReadWrite)
-	bool IsJumpStarting = false;
+	
 	
 protected:
 	virtual void BeginPlay() override;
@@ -37,6 +41,8 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UDWAbilitySystemComponent> DwAbilitySystemComponent;
 	
+	UPROPERTY(BlueprintReadWrite)
+	bool IsJumpStarting = false;
 	
 	
 public:	

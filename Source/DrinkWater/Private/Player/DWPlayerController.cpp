@@ -69,10 +69,10 @@ void ADWPlayerController::HandleJump(const FInputActionValue& Value)
 			GetCharacter()->UnCrouch();
 			return;
 		}
-		if (DWPlayer->JumpMontage && DWPlayer->IsJumpStarting == false)
+		if (DWPlayer->JumpMontage && DWPlayer->GetJumpStatus() == false)
 		{
 			DWPlayer->PlayAnimMontage(DWPlayer->JumpMontage);
-			DWPlayer->IsJumpStarting = true;
+			DWPlayer->SetJumpingStatus(true);
 		}
 	}
 }
