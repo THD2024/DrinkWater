@@ -18,7 +18,8 @@ class DRINKWATER_API ADWCharacter : public ACharacter,public IAbilitySystemInter
 public:
 	
 	ADWCharacter();
-
+	
+	UFUNCTION(BlueprintCallable)
 	void ExecutePhysicalJump();
 	
 	bool GetJumpStatus(){return IsJumpStarting;}

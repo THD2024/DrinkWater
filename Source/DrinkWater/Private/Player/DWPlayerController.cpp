@@ -51,7 +51,7 @@ void ADWPlayerController::HandleMove(const FInputActionValue& Value)
 	FRotator YawRotation = FRotator(0.f,ControllerRotation.Yaw,0.f);
 	
 	APawn* ControllerPawn = GetPawn();
-	if (!Player)return;
+	if (!ControllerPawn)return;
 	
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
