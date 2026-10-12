@@ -18,7 +18,12 @@ class DRINKWATER_API ADWPlayerController : public APlayerController
 public:
 	
 	ADWPlayerController();
-
+	
+	UPROPERTY(EditDefaultsOnly)
+	float RunSpeed = 500.f;
+	
+	UPROPERTY(EditDefaultsOnly)
+	float WalkSpeed = 300.f;
 	
 protected:
 	
@@ -29,38 +34,25 @@ protected:
 	virtual void SetupInputComponent() override;
 	
 	/*Movement*/
-	void HandleMove(const FInputActionValue& Value);
-	void HandleJump(const FInputActionValue& Value);
+	
+	UFUNCTION()
 	void HandleCrouch(const FInputActionValue& Value);
-	void HandleLook(const FInputActionValue& Value);
+	
+	UFUNCTION()
 	void HandleRun(const FInputActionValue& Value);
-	void HandleRunEnd(const FInputActionValue& Value);
+	
+	UFUNCTION()
+	void HandleStopRun(const FInputActionValue& Value);
 	
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInputMappingContext> DWContext;
-	
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UInputAction> Move;
-	
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UInputAction> Jump;
-	
+
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInputAction> Crouch;
 	
 	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UInputAction> Look;
-	
-	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInputAction> Run;
 	
-	UPROPERTY(EditDefaultsOnly)
-	float MoveSensitivity = 1.f;
-	
-	UPROPERTY(EditDefaultsOnly)
-	float PlayerMaxWalkSpeed = 300.f;
-	
-	UPROPERTY(EditDefaultsOnly)
-	float PlayerNormalWalkSpeed = 300.f;
+	bool bIsCouching = false;
 };
