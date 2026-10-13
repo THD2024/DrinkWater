@@ -27,8 +27,13 @@ protected:
 	
 	void InitInfo() ;
 	
+	void EyeLookTrace();
+	
+	bool IsSocketOccpied();
+	
 	UPROPERTY()
 	TObjectPtr<UDWAbilitySystemComponent> DwAbilitySystemComponent;
+
 
 public:	
 	virtual void Tick(float DeltaTime) override;

@@ -2,9 +2,7 @@
 
 
 #include "Player/DWCharacter.h"
-#include "Camera/CameraComponent.h"
-#include "Chaos/SoftsSpring.h"
-#include "GameFramework/SpringArmComponent.h"
+#include"Interaction/InteractableInterface.h"
 #include "Player/DWPlayerState.h"
 
 
@@ -40,11 +38,41 @@ void ADWCharacter::InitInfo()
 	}
 }
 
+void ADWCharacter::EyeLookTrace()
+{
+	//在这里面通过射线检测
+	FVector EyeLocation = FVector();
+	FRotator EyeRotation = FRotator();
+	GetActorEyesViewPoint(EyeLocation,EyeRotation);
+	
+	//计算视线前多少米,实现方向乘以最远距离
+	FVector TraceEnd = EyeLocation + (EyeRotation.Vector() * 500.f);
+	
+	FHitResult HitResult;
+	GetWorld()->LineTraceSingleByChannel(HitResult, EyeLocation, TraceEnd, ECollisionChannel::ECC_Visibility);
+	if (HitResult.GetActor() != nullptr && HitResult.GetActor()->Implements<UInteractableInterface>())
+	{
+		if (IsSocketOccpied())return;
+		IInteractableInterface::Execute_OnInterAct(HitResult.GetActor(), this);
+	}
+}
+
+bool ADWCharacter::IsSocketOccpied()
+{
+	TArray<AActor*> AttachedActors;
+	GetAttachedActors(AttachedActors);
+	for (auto& AttachActor :AttachedActors )
+	{
+		return AttachActor->GetAttachParentSocketName() == FName("GripPoint");
+	}
+	return false;
+}
+
 
 void ADWCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
+	EyeLookTrace();
 	
 }
 
