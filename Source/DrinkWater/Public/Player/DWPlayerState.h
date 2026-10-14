@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Core/DWAbilitySystemComponent.h"
 #include "GameFramework/PlayerState.h"
+#include "Item/DWInventoryItem.h"
 #include "DWPlayerState.generated.h"
 
 /**
@@ -24,4 +25,6 @@ protected:
 	
 	UPROPERTY()
 	TObjectPtr<UDWAbilitySystemComponent> DWAbilitySystemComponent;
+	
+	
 };

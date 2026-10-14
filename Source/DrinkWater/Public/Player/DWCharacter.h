@@ -6,6 +6,7 @@
 #include "AbilitySystemInterface.h"
 #include "Core/DWAbilitySystemComponent.h"
 #include "GameFramework/Character.h"
+#include "Item/DWInventoryItem.h"
 #include "DWCharacter.generated.h"
 
 class USpringArmComponent;
@@ -31,8 +32,19 @@ protected:
 	
 	bool IsSocketOccpied();
 	
+	void AddItem(AActor* Item);
+	
 	UPROPERTY()
 	TObjectPtr<UDWAbilitySystemComponent> DwAbilitySystemComponent;
+	
+	UPROPERTY()
+	TArray<TObjectPtr<AActor>> ItemBag;//测试暂用
+	
+	UPROPERTY(EditDefaultsOnly)
+	int32 BagVolum = 6;//背包容量
+	
+	UPROPERTY()
+	TObjectPtr<AActor> CurrentItem;//表示当前手中拿的item
 
 
 public:	

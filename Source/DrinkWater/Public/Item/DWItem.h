@@ -10,7 +10,7 @@
 
 UCLASS()
 class DRINKWATER_API ADWItem : public AActor , public IInteractableInterface
-{
+{//父类，仅可交互
 	GENERATED_BODY()
 	
 public:	
@@ -21,11 +21,13 @@ protected:
 	
 	virtual void OnInterAct_Implementation(const AActor* OverlapActor) override;
 	
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<USkeletalMeshComponent> ItemMesh;
+	virtual void OnFocus_Implementation() override;
 	
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<USphereComponent> SphereCollision;
+	TObjectPtr<UStaticMeshComponent> ItemMesh;//通用
+	
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<USphereComponent> SphereCollision;//通用
 	
 	UPROPERTY(EditAnywhere)
 	FName SocketName = FName("");

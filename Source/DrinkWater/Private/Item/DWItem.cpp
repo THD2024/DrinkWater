@@ -10,9 +10,11 @@ ADWItem::ADWItem()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	SphereCollision = CreateDefaultSubobject<USphereComponent>("SphereCollision");
+	//可见性通道遮挡，便于射线检测
+	SphereCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility,ECR_Block);
 	SetRootComponent(SphereCollision);
 	
-	ItemMesh = CreateDefaultSubobject<USkeletalMeshComponent>("ItemMesh");
+	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>("ItemMesh");
 	ItemMesh->SetupAttachment(RootComponent);
 	
 	
@@ -26,13 +28,13 @@ void ADWItem::BeginPlay()
 
 void ADWItem::OnInterAct_Implementation(const AActor* OverlapActor)
 {
-	//测试阶段
-	if (OverlapActor == nullptr)return;
-	SetActorEnableCollision(false);
-	USkeletalMeshComponent* Mesh = OverlapActor->FindComponentByTag<USkeletalMeshComponent>(FName("FirstPersonMesh"));
-	if (Mesh == nullptr)return;
-	FAttachmentTransformRules TransformRules = FAttachmentTransformRules::SnapToTargetIncludingScale;
-	AttachToComponent(Mesh,TransformRules,SocketName);
+	//父类这里再看
+	
+}
+
+void ADWItem::OnFocus_Implementation()
+{
+	//这里写统一的物体高亮逻辑,暂时先不管
 }
 
 void ADWItem::Tick(float DeltaTime)
