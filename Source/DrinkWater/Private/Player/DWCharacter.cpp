@@ -3,7 +3,9 @@
 
 #include "Player/DWCharacter.h"
 #include"Interaction/InteractableInterface.h"
+#include "Player/DWPlayerController.h"
 #include "Player/DWPlayerState.h"
+#include "UI/DWHUD.h"
 
 
 ADWCharacter::ADWCharacter()
@@ -15,6 +17,10 @@ void ADWCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	InitInfo();//单机情况下，只需要在beginplay中进行actorinfo。
+	if (ADWPlayerController* PC = Cast<ADWPlayerController>(GetController()))
+	{
+		PC->OnInteract.AddUObject(this, &ADWCharacter::BegintoInteract);
+	}
 }
 
 
@@ -35,10 +41,22 @@ void ADWCharacter::InitInfo()
 	{
 		DwAbilitySystemComponent = DWPlayerState->GetDWAbilitySystemComponent();
 		DwAbilitySystemComponent->InitAbilityActorInfo(DWPlayerState,this);
+		
+		if (ADWPlayerController* PC = Cast<ADWPlayerController>(GetController()))
+		{
+			if (PC->GetHUD())
+			{
+				if (ADWHUD* HUD = Cast<ADWHUD>(PC->GetHUD()))
+				{
+					HUD->InitOverlay(PC,DWPlayerState);
+				}
+			}
+		}
 	}
+	
 }
 
-void ADWCharacter::EyeLookTrace()
+void ADWCharacter::EyeLookTrace()//这个函数从现在开始只用来检测，不参与拾取逻辑。
 {
 	//在这里面通过射线检测
 	FVector EyeLocation = FVector();
@@ -50,29 +68,16 @@ void ADWCharacter::EyeLookTrace()
 	
 	FHitResult HitResult;
 	GetWorld()->LineTraceSingleByChannel(HitResult, EyeLocation, TraceEnd, ECollisionChannel::ECC_Visibility);
-	if (HitResult.GetActor() != nullptr && HitResult.GetActor()->Implements<UInteractableInterface>())
+	if (HitResult.GetActor() != nullptr && Cast<ADWItem>(HitResult.GetActor()))//判断当前是不是检测到了东西，并且检测到的东西是不是可交互父类
 	{
-		if (IsSocketOccpied())//插槽被占着就需要判断，没被占着就直接拿
-		{
-			//如果手中插槽满了，就需要判断此时物品能否收纳，不能就丢弃。然后在去拿新的东西。
-			//最终判断标准只有一个，手中的是不是inventoryitem，是收纳，不然就丢弃
-			if (CurrentItem && CurrentItem->ActorHasTag(FName("PAC")))
-			{
-				AddItem(CurrentItem);
-				CurrentItem->Destroy();
-				CurrentItem = nullptr;
-			}
-			else
-			{
-				//如果不是可收纳，就判断是不是可拾取的，这类直接扔掉
-				if (CurrentItem && CurrentItem->ActorHasTag(FName("PNC")))
-				{
-					CurrentItem->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-				}
-			}
-			//第三种情况就不需要管了，因为根本不会到手上来。直接交互就行了
-		}
-		IInteractableInterface::Execute_OnInterAct(HitResult.GetActor(), this);
+		DetectedActor = HitResult.GetActor();//存储到探测物体变量
+		//这里面还需要连接到ui，用来提醒可以交互,通过广播
+		OnTriggerCueWidget.Broadcast(true);
+	}
+	else
+	{
+		DetectedActor = nullptr;
+		OnTriggerCueWidget.Broadcast(false);
 	}
 }
 
@@ -91,18 +96,48 @@ bool ADWCharacter::IsSocketOccpied()
 	return false;
 }
 
-void ADWCharacter::AddItem( AActor* Item)
+bool ADWCharacter::AddItem( AActor* Item)
 {
-	if (ItemBag.Num() <= BagVolum)
+	if (ItemBag.Num() < BagVolum)
 	{
 		ItemBag.Add(Item);
-		GEngine->AddOnScreenDebugMessage(1,1.f,FColor::Blue,TEXT("存入新东西"));
+		return true;
+	}
+	
+	GEngine->AddOnScreenDebugMessage(1,1.f,FColor::Blue,TEXT("背包容量已达上限,无法存入背包"));
+	return false;
+	
+}
 
-	}
-	else
+void ADWCharacter::BegintoInteract()
+{
+	//该函数绑定到按键回调，在这里面进行交互逻辑
+	if (DetectedActor == nullptr ||!DetectedActor->Implements<UInteractableInterface>()) return;//没有检测到物体或者物体没有继承接口都不行
+	if (IsSocketOccpied())//插槽被占着就需要判断，没被占着就直接拿
 	{
-		GEngine->AddOnScreenDebugMessage(1,1.f,FColor::Blue,TEXT("背包容量已达上限,无法存入背包"));
+		//如果手中插槽满了，就需要判断此时物品能否收纳，不能就丢弃。然后在去拿新的东西。
+		//最终判断标准只有一个，手中的是不是inventoryitem，是收纳，不然就丢弃
+		if (CurrentItem && CurrentItem->ActorHasTag(FName("PAC")))
+		{
+			if (AddItem(CurrentItem))//如果添加完成就可以将currentitme重置了。
+			{
+				// CurrentItem->Destroy();这一步不对，此时指针还是指着那个物品，销毁就会把数组中的也销毁
+				//这个问题先放着，后面处理背包是在做，思路是存储数据而不是actor。
+				CurrentItem = nullptr;
+			}
+			
+		}
+		else
+		{
+			//如果不是可收纳，就判断是不是可拾取的，这类直接扔掉
+			if (CurrentItem && CurrentItem->ActorHasTag(FName("PNC")))
+			{
+				CurrentItem->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+			}
+		}
+		//第三种情况就不需要管了，因为根本不会到手上来。直接交互就行了
 	}
+	IInteractableInterface::Execute_OnInterAct(DetectedActor, this);
 }
 
 

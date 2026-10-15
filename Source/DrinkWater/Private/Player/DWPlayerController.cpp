@@ -40,6 +40,7 @@ void ADWPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(Crouch,ETriggerEvent::Started,this,&ADWPlayerController::HandleCrouch);
 		EnhancedInputComponent->BindAction(Run,ETriggerEvent::Triggered,this,&ADWPlayerController::HandleRun);
 		EnhancedInputComponent->BindAction(Run,ETriggerEvent::Completed,this,&ADWPlayerController::HandleStopRun);
+		EnhancedInputComponent->BindAction(InterAct,ETriggerEvent::Started,this,&ADWPlayerController::HandleInterAct);
 	}
 }
 
@@ -73,6 +74,12 @@ void ADWPlayerController::HandleStopRun(const FInputActionValue& Value)
 	{
 		GetCharacter()->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	}
+}
+
+void ADWPlayerController::HandleInterAct(const FInputActionValue& Value)
+{
+	//这里面用来广播，通知此时按下了交互键
+	OnInteract.Broadcast();
 }
 
 

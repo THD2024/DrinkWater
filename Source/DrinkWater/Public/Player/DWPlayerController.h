@@ -10,6 +10,9 @@
 /**
  * 
  */
+
+DECLARE_MULTICAST_DELEGATE(FInterActDelegate);
+
 UCLASS()
 class DRINKWATER_API ADWPlayerController : public APlayerController
 {
@@ -24,6 +27,8 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly)
 	float WalkSpeed = 300.f;
+	
+	FInterActDelegate OnInteract;
 	
 protected:
 	
@@ -44,6 +49,11 @@ protected:
 	UFUNCTION()
 	void HandleStopRun(const FInputActionValue& Value);
 	
+	UFUNCTION()
+	void HandleInterAct(const FInputActionValue& Value);
+	
+	
+	
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInputMappingContext> DWContext;
@@ -53,6 +63,9 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInputAction> Run;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UInputAction> InterAct;
 	
 	bool bIsCouching = false;
 };

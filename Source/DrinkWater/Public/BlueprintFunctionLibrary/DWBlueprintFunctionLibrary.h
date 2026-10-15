@@ -1,0 +1,23 @@
+// Tian Handong
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Kismet/BlueprintFunctionLibrary.h"
+#include "DWBlueprintFunctionLibrary.generated.h"
+
+class UCueWidgeController;
+/**
+ * 
+ */
+UCLASS()
+class DRINKWATER_API UDWBlueprintFunctionLibrary : public UBlueprintFunctionLibrary
+{
+	GENERATED_BODY()
+	
+public:
+	
+	UFUNCTION(BlueprintPure,BlueprintCallable)
+	static UCueWidgeController* GetCueWidgetController(const UObject* WorldContextObject, APlayerController* PlayerController);
+	
+};

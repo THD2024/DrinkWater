@@ -6,11 +6,12 @@
 #include "AbilitySystemInterface.h"
 #include "Core/DWAbilitySystemComponent.h"
 #include "GameFramework/Character.h"
-#include "Item/DWInventoryItem.h"
 #include "DWCharacter.generated.h"
 
 class USpringArmComponent;
 class UCameraComponent;
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FTriggerCueWidgetDelegate,bool);
 
 UCLASS()
 class DRINKWATER_API ADWCharacter : public ACharacter,public IAbilitySystemInterface
@@ -20,6 +21,8 @@ class DRINKWATER_API ADWCharacter : public ACharacter,public IAbilitySystemInter
 public:
 	
 	ADWCharacter();
+	
+	FTriggerCueWidgetDelegate OnTriggerCueWidget;
 
 protected:
 	virtual void BeginPlay() override;
@@ -32,7 +35,9 @@ protected:
 	
 	bool IsSocketOccpied();
 	
-	void AddItem(AActor* Item);
+	bool AddItem(AActor* Item);
+	
+	void BegintoInteract();
 	
 	UPROPERTY()
 	TObjectPtr<UDWAbilitySystemComponent> DwAbilitySystemComponent;
@@ -45,7 +50,11 @@ protected:
 	
 	UPROPERTY()
 	TObjectPtr<AActor> CurrentItem;//表示当前手中拿的item
+	
+	UPROPERTY()
+	TObjectPtr<AActor> DetectedActor;//表示当前检测到的可交互物体
 
+	
 
 public:	
 	virtual void Tick(float DeltaTime) override;
