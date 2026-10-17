@@ -23,7 +23,7 @@ void UCueWidgeController::BroadInitValue()
 
 }
 
-void UCueWidgeController::TriggerCueWidget(bool CanTrigger)
+void UCueWidgeController::TriggerCueWidget(bool CanTrigger,AActor* DetectedActor)
 {
-	TriggerDelegate.Broadcast(CanTrigger);
+	TriggerDelegate.Broadcast(CanTrigger,DetectedActor);
 }

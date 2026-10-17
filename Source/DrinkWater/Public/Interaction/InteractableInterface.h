@@ -25,4 +25,7 @@ public:
 	
 	UFUNCTION(BlueprintNativeEvent)
 	void OnFocus();//当射线检测到了可交互的物体
+	
+	UFUNCTION(BlueprintNativeEvent)
+	void OnUnFocus();//视线不在交互物体上面
 };

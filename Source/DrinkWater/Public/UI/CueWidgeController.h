@@ -10,7 +10,7 @@
  * 
  */
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInteractWidgetDelegate,bool,InCanTrigger);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FInteractWidgetDelegate,bool,InCanTrigger,AActor*,DetectedActor);
 
 UCLASS()
 class DRINKWATER_API UCueWidgeController : public UDWWidgeController
@@ -24,7 +24,7 @@ public:
 	virtual void BroadInitValue() override;
 	
 protected:
-	void TriggerCueWidget(bool CanTrigger);
+	void TriggerCueWidget(bool CanTrigger,AActor* DetectedActor);
 	
 	UPROPERTY(BlueprintAssignable)
 	FInteractWidgetDelegate TriggerDelegate;

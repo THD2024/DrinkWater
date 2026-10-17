@@ -11,7 +11,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FTriggerCueWidgetDelegate,bool);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FTriggerCueWidgetDelegate,bool,AActor*);
 
 UCLASS()
 class DRINKWATER_API ADWCharacter : public ACharacter,public IAbilitySystemInterface

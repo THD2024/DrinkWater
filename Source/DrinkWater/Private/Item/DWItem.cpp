@@ -3,7 +3,7 @@
 
 #include "Item/DWItem.h"
 
-
+#include "IDetailTreeNode.h"
 
 
 ADWItem::ADWItem()
@@ -16,6 +16,8 @@ ADWItem::ADWItem()
 	
 	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>("ItemMesh");
 	ItemMesh->SetupAttachment(RootComponent);
+	ItemMesh->SetRenderInDepthPass(true);
+	ItemMesh->SetCustomDepthStencilValue(1);
 	
 	
 }
@@ -29,12 +31,17 @@ void ADWItem::BeginPlay()
 void ADWItem::OnInterAct_Implementation(const AActor* OverlapActor)
 {
 	//父类这里再看
-	
+	CabintOpenandClose();
 }
 
 void ADWItem::OnFocus_Implementation()
 {
-	//这里写统一的物体高亮逻辑,暂时先不管
+	ItemMesh->SetRenderCustomDepth(true);
+}
+
+void ADWItem::OnUnFocus_Implementation()
+{
+	ItemMesh->SetRenderCustomDepth(false);
 }
 
 void ADWItem::Tick(float DeltaTime)

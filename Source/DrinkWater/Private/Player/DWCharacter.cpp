@@ -72,12 +72,21 @@ void ADWCharacter::EyeLookTrace()//这个函数从现在开始只用来检测，
 	{
 		DetectedActor = HitResult.GetActor();//存储到探测物体变量
 		//这里面还需要连接到ui，用来提醒可以交互,通过广播
-		OnTriggerCueWidget.Broadcast(true);
+		OnTriggerCueWidget.Broadcast(true,DetectedActor);
+		if (DetectedActor->Implements<UInteractableInterface>())
+		{
+			IInteractableInterface::Execute_OnFocus(DetectedActor);
+		}
 	}
 	else
 	{
+		if (DetectedActor && DetectedActor->Implements<UInteractableInterface>())
+		{
+			IInteractableInterface::Execute_OnUnFocus(DetectedActor);
+		}
 		DetectedActor = nullptr;
-		OnTriggerCueWidget.Broadcast(false);
+		OnTriggerCueWidget.Broadcast(false,DetectedActor);
+		
 	}
 }
 

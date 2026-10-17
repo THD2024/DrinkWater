@@ -23,7 +23,12 @@ protected:
 	
 	virtual void OnFocus_Implementation() override;
 	
-	UPROPERTY(EditAnywhere)
+	virtual void OnUnFocus_Implementation() override;
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void CabintOpenandClose();
+	
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> ItemMesh;//通用
 	
 	UPROPERTY(EditAnywhere)
@@ -36,3 +41,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 };
+
+
+
+
