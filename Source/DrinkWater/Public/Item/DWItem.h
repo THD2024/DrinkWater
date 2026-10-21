@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/Actor.h"
 #include "Interaction/InteractableInterface.h"
@@ -36,6 +37,9 @@ protected:
 	
 	UPROPERTY(EditAnywhere)
 	FName SocketName = FName("");
+	
+	UPROPERTY(EditAnywhere)
+	FGameplayTag IdentityTag;//用来在dataasset中获取到对应的类的基本信息
 	
 public:	
 	virtual void Tick(float DeltaTime) override;

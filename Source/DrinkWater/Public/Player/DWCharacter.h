@@ -52,7 +52,10 @@ protected:
 	TObjectPtr<AActor> CurrentItem;//表示当前手中拿的item
 	
 	UPROPERTY()
-	TObjectPtr<AActor> DetectedActor;//表示当前检测到的可交互物体
+	TObjectPtr<AActor> LastFocusActor;//上一个被检测到的物体
+	
+	UPROPERTY()
+	TObjectPtr<AActor> CurrentFocusActor;//当前被检测到的物体
 
 	
 

@@ -70,22 +70,30 @@ void ADWCharacter::EyeLookTrace()//这个函数从现在开始只用来检测，
 	GetWorld()->LineTraceSingleByChannel(HitResult, EyeLocation, TraceEnd, ECollisionChannel::ECC_Visibility);
 	if (HitResult.GetActor() != nullptr && Cast<ADWItem>(HitResult.GetActor()))//判断当前是不是检测到了东西，并且检测到的东西是不是可交互父类
 	{
-		DetectedActor = HitResult.GetActor();//存储到探测物体变量
+		CurrentFocusActor = HitResult.GetActor();//存储当前检测到的物体变量
 		//这里面还需要连接到ui，用来提醒可以交互,通过广播
-		OnTriggerCueWidget.Broadcast(true,DetectedActor);
-		if (DetectedActor->Implements<UInteractableInterface>())
+		OnTriggerCueWidget.Broadcast(true,CurrentFocusActor);
+		if (LastFocusActor == CurrentFocusActor) return;//保证不会对一个物体重复高亮,这种情况一般表示当前每帧检测，视线还是在一个物体上面，或者根本没看物体
+		if (CurrentFocusActor->Implements<UInteractableInterface>())
 		{
-			IInteractableInterface::Execute_OnFocus(DetectedActor);
+			IInteractableInterface::Execute_OnFocus(CurrentFocusActor);
+			if (LastFocusActor && LastFocusActor->Implements<UInteractableInterface>())
+			{
+				IInteractableInterface::Execute_OnUnFocus(LastFocusActor);//让前一个高亮解除
+
+			}
 		}
+		LastFocusActor = CurrentFocusActor;//更新上一个看到的物体的值.而且这个条件保证当前只有当二者对象不一样的时候才
 	}
 	else
 	{
-		if (DetectedActor && DetectedActor->Implements<UInteractableInterface>())
+		if (CurrentFocusActor && CurrentFocusActor->Implements<UInteractableInterface>())
 		{
-			IInteractableInterface::Execute_OnUnFocus(DetectedActor);
+			IInteractableInterface::Execute_OnUnFocus(CurrentFocusActor);
 		}
-		DetectedActor = nullptr;
-		OnTriggerCueWidget.Broadcast(false,DetectedActor);
+		CurrentFocusActor = nullptr;
+		LastFocusActor = CurrentFocusActor;//此时要么没有检测到东西要么东西不是可交互的，在结尾更新这个
+		OnTriggerCueWidget.Broadcast(false,CurrentFocusActor);
 		
 	}
 }
@@ -121,7 +129,7 @@ bool ADWCharacter::AddItem( AActor* Item)
 void ADWCharacter::BegintoInteract()
 {
 	//该函数绑定到按键回调，在这里面进行交互逻辑
-	if (DetectedActor == nullptr ||!DetectedActor->Implements<UInteractableInterface>()) return;//没有检测到物体或者物体没有继承接口都不行
+	if (CurrentFocusActor == nullptr ||!CurrentFocusActor->Implements<UInteractableInterface>()) return;//没有检测到物体或者物体没有继承接口都不行
 	if (IsSocketOccpied())//插槽被占着就需要判断，没被占着就直接拿
 	{
 		//如果手中插槽满了，就需要判断此时物品能否收纳，不能就丢弃。然后在去拿新的东西。
@@ -146,7 +154,7 @@ void ADWCharacter::BegintoInteract()
 		}
 		//第三种情况就不需要管了，因为根本不会到手上来。直接交互就行了
 	}
-	IInteractableInterface::Execute_OnInterAct(DetectedActor, this);
+	IInteractableInterface::Execute_OnInterAct(CurrentFocusActor, this);
 }
 
 
