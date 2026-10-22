@@ -131,7 +131,6 @@ bool ADWCharacter::AddItem( AActor* Item)
 void ADWCharacter::BegintoInteract()
 {
 	//该函数绑定到按键回调，在这里面进行交互逻辑
-	// if (CurrentFocusActor == nullptr ||!CurrentFocusActor->Implements<UInteractableInterface>()) return;//没有检测到物体或者物体没有继承接口都不行
 	if (IsSocketOccpied())//插槽被占着就需要判断，没被占着就直接拿
 	{
 		//如果此时手中有，且实现没在可交互物体上，那么按e就是执行物体本身的操作
@@ -161,8 +160,11 @@ void ADWCharacter::BegintoInteract()
 			}
 		}
 		//第三种情况就不需要管了，因为根本不会到手上来。直接交互就行了
+		IInteractableInterface::Execute_OnInterAct(CurrentFocusActor, this);
 	}
-	IInteractableInterface::Execute_OnInterAct(CurrentFocusActor, this);
+	//证明手中没东西，那么就需要拿起来
+	if (CurrentFocusActor == nullptr ||!CurrentFocusActor->Implements<UInteractableInterface>())return;//没有检测到物体或者物体没有继承接口
+	IInteractableInterface::Execute_OnInterAct(CurrentFocusActor,this);
 }
 
 

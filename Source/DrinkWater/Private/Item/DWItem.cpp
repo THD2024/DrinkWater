@@ -31,7 +31,7 @@ void ADWItem::BeginPlay()
 
 void ADWItem::OnInterAct_Implementation(const AActor* OverlapActor)//处理在交互时该物体要干什么
 {
-	//父类这里再看
+	//有动画就播放没有动画就走另一条交互
 	UDWItemDataAsset*ItemDA = UDWBlueprintFunctionLibrary::GetItemDataAssetFromGameState(this);
 	if (ItemDA)
 	{
@@ -39,8 +39,8 @@ void ADWItem::OnInterAct_Implementation(const AActor* OverlapActor)//处理在�
 		if (ItemInfo.ItemMontage)
 		{
 			//播放item的交互动画
+			return;
 		}
-		return;
 	}
 	OwnInteractAnim();
 }
