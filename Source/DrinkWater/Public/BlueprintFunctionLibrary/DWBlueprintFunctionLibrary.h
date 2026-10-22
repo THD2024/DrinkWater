@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/DWItemDataAsset.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "DWBlueprintFunctionLibrary.generated.h"
 
@@ -20,4 +21,6 @@ public:
 	UFUNCTION(BlueprintPure,BlueprintCallable)
 	static UCueWidgeController* GetCueWidgetController(const UObject* WorldContextObject, APlayerController* PlayerController);
 	
+	UFUNCTION(BlueprintPure,BlueprintCallable)
+	static UDWItemDataAsset* GetItemDataAssetFromGameState(const UObject* WorldContextObject);
 };

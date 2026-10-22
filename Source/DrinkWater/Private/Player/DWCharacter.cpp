@@ -2,6 +2,8 @@
 
 
 #include "Player/DWCharacter.h"
+
+#include "DWGameplayTags.h"
 #include"Interaction/InteractableInterface.h"
 #include "Player/DWPlayerController.h"
 #include "Player/DWPlayerState.h"
@@ -129,9 +131,15 @@ bool ADWCharacter::AddItem( AActor* Item)
 void ADWCharacter::BegintoInteract()
 {
 	//该函数绑定到按键回调，在这里面进行交互逻辑
-	if (CurrentFocusActor == nullptr ||!CurrentFocusActor->Implements<UInteractableInterface>()) return;//没有检测到物体或者物体没有继承接口都不行
+	// if (CurrentFocusActor == nullptr ||!CurrentFocusActor->Implements<UInteractableInterface>()) return;//没有检测到物体或者物体没有继承接口都不行
 	if (IsSocketOccpied())//插槽被占着就需要判断，没被占着就直接拿
 	{
+		//如果此时手中有，且实现没在可交互物体上，那么按e就是执行物体本身的操作
+		if (CurrentFocusActor == nullptr)
+		{
+			IInteractableInterface::Execute_ItemOwnAction(CurrentItem);
+			return;
+		}
 		//如果手中插槽满了，就需要判断此时物品能否收纳，不能就丢弃。然后在去拿新的东西。
 		//最终判断标准只有一个，手中的是不是inventoryitem，是收纳，不然就丢弃
 		if (CurrentItem && CurrentItem->ActorHasTag(FName("PAC")))

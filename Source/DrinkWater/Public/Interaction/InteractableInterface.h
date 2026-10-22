@@ -28,4 +28,7 @@ public:
 	
 	UFUNCTION(BlueprintNativeEvent)
 	void OnUnFocus();//视线不在交互物体上面
+	
+	UFUNCTION(BlueprintNativeEvent)
+	void ItemOwnAction();
 };

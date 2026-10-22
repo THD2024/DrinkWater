@@ -2,7 +2,10 @@
 
 
 #include "BlueprintFunctionLibrary/DWBlueprintFunctionLibrary.h"
+
+#include "Core/DWGameStateBase.h"
 #include "GameFramework/PlayerState.h"
+#include "Kismet/GameplayStatics.h"
 #include "UI/DWHUD.h"
 
 UCueWidgeController* UDWBlueprintFunctionLibrary::GetCueWidgetController(const UObject* WorldContextObject,
@@ -17,5 +20,16 @@ UCueWidgeController* UDWBlueprintFunctionLibrary::GetCueWidgetController(const U
 			return Hud->GetCueWidgeController(Params);
 		}
 	}
+	return nullptr;
+}
+
+UDWItemDataAsset* UDWBlueprintFunctionLibrary::GetItemDataAssetFromGameState(const UObject* WorldContextObject)
+{
+	ADWGameStateBase* GameState = Cast<ADWGameStateBase>(UGameplayStatics::GetGameState(WorldContextObject));
+	if (GameState)
+	{
+		return GameState->GetItemDataAsset();
+	}
+	
 	return nullptr;
 }

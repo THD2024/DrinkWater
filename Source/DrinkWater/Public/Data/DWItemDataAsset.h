@@ -12,7 +12,7 @@
  */
  
  USTRUCT(BlueprintType,Blueprintable)
- struct FDWItemInfo
+ struct FDWItemInfo//这里面存每个课交互的actor的基本信息，不添加设计难度
  {
 	 GENERATED_BODY()
  	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -34,12 +34,13 @@
  	FGameplayTag IdentityTag;
  };
  
-UCLASS()
+UCLASS(Blueprintable,BlueprintType)
 class DRINKWATER_API UDWItemDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
 	
 protected:
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<FDWItemInfo> ItemInfos;
 	
 public:

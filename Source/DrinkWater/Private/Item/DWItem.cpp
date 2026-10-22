@@ -4,6 +4,7 @@
 #include "Item/DWItem.h"
 
 #include "IDetailTreeNode.h"
+#include "BlueprintFunctionLibrary/DWBlueprintFunctionLibrary.h"
 
 
 ADWItem::ADWItem()
@@ -28,10 +29,20 @@ void ADWItem::BeginPlay()
 	
 }
 
-void ADWItem::OnInterAct_Implementation(const AActor* OverlapActor)
+void ADWItem::OnInterAct_Implementation(const AActor* OverlapActor)//处理在交互时该物体要干什么
 {
 	//父类这里再看
-	CabintOpenandClose();
+	UDWItemDataAsset*ItemDA = UDWBlueprintFunctionLibrary::GetItemDataAssetFromGameState(this);
+	if (ItemDA)
+	{
+		FDWItemInfo ItemInfo = ItemDA->GetItemInfoByTag(IdentityTag);
+		if (ItemInfo.ItemMontage)
+		{
+			//播放item的交互动画
+		}
+		return;
+	}
+	OwnInteractAnim();
 }
 
 void ADWItem::OnFocus_Implementation()
@@ -42,6 +53,11 @@ void ADWItem::OnFocus_Implementation()
 void ADWItem::OnUnFocus_Implementation()
 {
 	ItemMesh->SetRenderCustomDepth(false);
+}
+
+void ADWItem::ItemOwnAction_Implementation()//处理的是拿在手上后该物体可以干什么
+{
+	StartItemOwnAction();//Item自身处理基本交互外的其他功能，比如手电筒拿在手上，然后开关
 }
 
 void ADWItem::Tick(float DeltaTime)

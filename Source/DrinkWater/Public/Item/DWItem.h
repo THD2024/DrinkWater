@@ -16,6 +16,8 @@ class DRINKWATER_API ADWItem : public AActor , public IInteractableInterface
 	
 public:	
 	ADWItem();
+	
+	FGameplayTag& GetIdentityTag(){return IdentityTag;}
 
 protected:
 	virtual void BeginPlay() override;
@@ -26,8 +28,13 @@ protected:
 	
 	virtual void OnUnFocus_Implementation() override;
 	
+	virtual void ItemOwnAction_Implementation() override;
+	
 	UFUNCTION(BlueprintImplementableEvent)
-	void CabintOpenandClose();
+	void OwnInteractAnim();//表示该item自身的动画，比如柜子开门
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void StartItemOwnAction();
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> ItemMesh;//通用
