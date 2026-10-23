@@ -139,6 +139,7 @@ void ADWCharacter::BegintoInteract()
 			if (CurrentItem->Implements<UInteractableInterface>())
 			{
 				FGameplayTag IdentityTag = IInteractableInterface::Execute_GetTagFromItem(CurrentItem);
+				if (!UDWBlueprintFunctionLibrary::GetItemDataAssetFromGameState(this))return;
 				FDWItemInfo Iteminfo = UDWBlueprintFunctionLibrary::GetItemDataAssetFromGameState(this)->GetItemInfoByTag(IdentityTag);
 				if (!Iteminfo.Name.IsValid() || !Iteminfo.ItemPhoto)return;//如果名字是空,图片是空，那就说明返回的是个空的info，就不存，反之存.虽然这种情况逻辑上不存在，但是以防万一
 				FItemBag BagInfo(Iteminfo.Name,Iteminfo.ItemPhoto);
@@ -161,6 +162,7 @@ void ADWCharacter::BegintoInteract()
 				if (CurrentItem->Implements<UInteractableInterface>())
 				{
 					IInteractableInterface::Execute_SetItemPhysic(CurrentItem,true);
+					CurrentItem = nullptr;//掉在地上不符合currentitem的定义，那么此时重置currentitem
 				}
 			}
 		}
