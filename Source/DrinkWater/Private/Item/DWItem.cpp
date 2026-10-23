@@ -23,6 +23,12 @@ ADWItem::ADWItem()
 	
 }
 
+void ADWItem::SetPhysicalSimulation(bool CanPhysicalSimulate)
+{
+	if (!ItemMesh) return;
+	ItemMesh->SetSimulatePhysics(CanPhysicalSimulate);
+}
+
 void ADWItem::BeginPlay()
 {
 	Super::BeginPlay();
@@ -58,6 +64,11 @@ void ADWItem::OnUnFocus_Implementation()
 void ADWItem::ItemOwnAction_Implementation()//处理的是拿在手上后该物体可以干什么
 {
 	StartItemOwnAction();//Item自身处理基本交互外的其他功能，比如手电筒拿在手上，然后开关
+}
+
+FGameplayTag ADWItem::GetTagFromItem_Implementation()
+{
+	return IdentityTag;
 }
 
 void ADWItem::Tick(float DeltaTime)

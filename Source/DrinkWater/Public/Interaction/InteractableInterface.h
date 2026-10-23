@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include"GameplayTagContainer.h"
 #include "InteractableInterface.generated.h"
 
 UINTERFACE(MinimalAPI)
@@ -31,4 +32,10 @@ public:
 	
 	UFUNCTION(BlueprintNativeEvent)
 	void ItemOwnAction();
+	
+	UFUNCTION(BlueprintNativeEvent)
+	FGameplayTag GetTagFromItem();
+	
+	UFUNCTION(BlueprintNativeEvent)
+	void SetItemPhysic(bool CanPhysical);
 };

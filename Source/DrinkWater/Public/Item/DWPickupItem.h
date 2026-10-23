@@ -19,6 +19,7 @@ public:
 	
 	virtual void OnInterAct_Implementation(const AActor* OverlapActor) override;
 	
+	virtual void SetItemPhysic_Implementation(bool CanPhysical) override;
 	
 
 };

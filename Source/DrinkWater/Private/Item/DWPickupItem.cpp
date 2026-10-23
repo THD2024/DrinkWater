@@ -20,4 +20,9 @@ void ADWPickupItem::OnInterAct_Implementation(const AActor* OverlapActor)
 	AttachToComponent(Mesh,TransformRules,SocketName);
 }
 
+void ADWPickupItem::SetItemPhysic_Implementation(bool CanPhysical)
+{
+	SetPhysicalSimulation(CanPhysical);
+}
+
 

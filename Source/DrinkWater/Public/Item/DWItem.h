@@ -18,6 +18,8 @@ public:
 	ADWItem();
 	
 	FGameplayTag& GetIdentityTag(){return IdentityTag;}
+	
+	void SetPhysicalSimulation(bool CanPhysicalSimulate);
 
 protected:
 	virtual void BeginPlay() override;
@@ -29,6 +31,9 @@ protected:
 	virtual void OnUnFocus_Implementation() override;
 	
 	virtual void ItemOwnAction_Implementation() override;
+	
+	virtual FGameplayTag GetTagFromItem_Implementation() override;
+	
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void OwnInteractAnim();//表示该item自身的动画，比如柜子开门

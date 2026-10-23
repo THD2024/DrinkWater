@@ -15,6 +15,9 @@
  struct FDWItemInfo//这里面存每个课交互的actor的基本信息，不添加设计难度
  {
 	 GENERATED_BODY()
+ 	
+ 	FDWItemInfo() : Name(NAME_None),Description(NAME_None),ItemPhoto(nullptr),ActorMontage(nullptr),ItemMontage(nullptr){}
+ 	
  	UPROPERTY(EditAnywhere, BlueprintReadWrite)
  	FName Name = FName("");
  	
@@ -22,13 +25,13 @@
  	FName Description = FName("");
  	
  	UPROPERTY(EditAnywhere, BlueprintReadWrite)
- 	UTexture2D* ItemPhoto;
+ 	UTexture2D* ItemPhoto = nullptr;
  	
  	UPROPERTY(EditAnywhere, BlueprintReadWrite)
- 	TObjectPtr<UAnimMontage> ActorMontage;
+ 	TObjectPtr<UAnimMontage> ActorMontage = nullptr;
  	
  	UPROPERTY(EditAnywhere, BlueprintReadWrite)
- 	TObjectPtr<UAnimMontage> ItemMontage;
+ 	TObjectPtr<UAnimMontage> ItemMontage = nullptr;
  	
  	UPROPERTY(EditAnywhere, BlueprintReadWrite)
  	FGameplayTag IdentityTag;

@@ -4,6 +4,7 @@
 #include "Player/DWCharacter.h"
 
 #include "DWGameplayTags.h"
+#include "BlueprintFunctionLibrary/DWBlueprintFunctionLibrary.h"
 #include"Interaction/InteractableInterface.h"
 #include "Player/DWPlayerController.h"
 #include "Player/DWPlayerState.h"
@@ -12,7 +13,7 @@
 
 ADWCharacter::ADWCharacter()
 {
-	
+	BagComponent = CreateDefaultSubobject<UDWBagComponent>("BagComponent");
 }
 
 void ADWCharacter::BeginPlay()
@@ -115,17 +116,9 @@ bool ADWCharacter::IsSocketOccpied()
 	return false;
 }
 
-bool ADWCharacter::AddItem( AActor* Item)
+bool ADWCharacter::AddItem(const FItemBag& BagInfo)
 {
-	if (ItemBag.Num() < BagVolum)
-	{
-		ItemBag.Add(Item);
-		return true;
-	}
-	
-	GEngine->AddOnScreenDebugMessage(1,1.f,FColor::Blue,TEXT("背包容量已达上限,无法存入背包"));
-	return false;
-	
+	return BagComponent->AddItemtoBag(BagInfo);
 }
 
 void ADWCharacter::BegintoInteract()
@@ -143,11 +136,18 @@ void ADWCharacter::BegintoInteract()
 		//最终判断标准只有一个，手中的是不是inventoryitem，是收纳，不然就丢弃
 		if (CurrentItem && CurrentItem->ActorHasTag(FName("PAC")))
 		{
-			if (AddItem(CurrentItem))//如果添加完成就可以将currentitme重置了。
+			if (CurrentItem->Implements<UInteractableInterface>())
 			{
-				// CurrentItem->Destroy();这一步不对，此时指针还是指着那个物品，销毁就会把数组中的也销毁
-				//这个问题先放着，后面处理背包是在做，思路是存储数据而不是actor。
-				CurrentItem = nullptr;
+				FGameplayTag IdentityTag = IInteractableInterface::Execute_GetTagFromItem(CurrentItem);
+				FDWItemInfo Iteminfo = UDWBlueprintFunctionLibrary::GetItemDataAssetFromGameState(this)->GetItemInfoByTag(IdentityTag);
+				if (!Iteminfo.Name.IsValid() || !Iteminfo.ItemPhoto)return;//如果名字是空,图片是空，那就说明返回的是个空的info，就不存，反之存.虽然这种情况逻辑上不存在，但是以防万一
+				FItemBag BagInfo(Iteminfo.Name,Iteminfo.ItemPhoto);
+				if (AddItem(BagInfo))//如果添加完成就可以将currentitme重置了。
+				{
+					//现在背包里面存的是数据，存好后直接将当前世界中的actor销毁
+					CurrentItem->Destroy();
+					CurrentItem = nullptr;
+				}
 			}
 			
 		}
@@ -157,9 +157,19 @@ void ADWCharacter::BegintoInteract()
 			if (CurrentItem && CurrentItem->ActorHasTag(FName("PNC")))
 			{
 				CurrentItem->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+				//丢掉后添加物理特性，掉在地上
+				if (CurrentItem->Implements<UInteractableInterface>())
+				{
+					IInteractableInterface::Execute_SetItemPhysic(CurrentItem,true);
+				}
 			}
 		}
 		//第三种情况就不需要管了，因为根本不会到手上来。直接交互就行了
+		//现在要考虑如果此时实现对准的是先前掉落的物体，那么就需要关闭物理模拟
+		if (CurrentFocusActor->Implements<UInteractableInterface>())
+		{
+			IInteractableInterface::Execute_SetItemPhysic(CurrentFocusActor,false);
+		}
 		IInteractableInterface::Execute_OnInterAct(CurrentFocusActor, this);
 	}
 	//证明手中没东西，那么就需要拿起来

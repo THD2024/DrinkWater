@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "Core/DWAbilitySystemComponent.h"
+#include "Data/DWBagComponent.h"
 #include "GameFramework/Character.h"
 #include "DWCharacter.generated.h"
 
@@ -35,7 +36,7 @@ protected:
 	
 	bool IsSocketOccpied();
 	
-	bool AddItem(AActor* Item);
+	bool AddItem(const FItemBag& BagInfo);
 	
 	void BegintoInteract();
 	
@@ -43,10 +44,7 @@ protected:
 	TObjectPtr<UDWAbilitySystemComponent> DwAbilitySystemComponent;
 	
 	UPROPERTY()
-	TArray<TObjectPtr<AActor>> ItemBag;//测试暂用
-	
-	UPROPERTY(EditDefaultsOnly)
-	int32 BagVolum = 6;//背包容量
+	TObjectPtr<UDWBagComponent> BagComponent;
 	
 	UPROPERTY()
 	TObjectPtr<AActor> CurrentItem;//表示当前手中拿的item
