@@ -149,6 +149,11 @@ void ADWCharacter::BegintoInteract()
 					CurrentItem->Destroy();
 					CurrentItem = nullptr;
 				}
+				else//当包满后，无法存入，就需要将手中的东西给扔掉，然后在拾取地上的新东西	
+				{
+					CurrentItem->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+					CurrentItem = nullptr;
+				}
 			}
 			
 		}
@@ -172,7 +177,7 @@ void ADWCharacter::BegintoInteract()
 		{
 			IInteractableInterface::Execute_SetItemPhysic(CurrentFocusActor,false);
 		}
-		IInteractableInterface::Execute_OnInterAct(CurrentFocusActor, this);
+		IInteractableInterface::Execute_OnInterAct(CurrentFocusActor, this);//最终都是进行交互，前面全部都是交互前置判断
 	}
 	//证明手中没东西，那么就需要拿起来
 	if (CurrentFocusActor == nullptr ||!CurrentFocusActor->Implements<UInteractableInterface>())return;//没有检测到物体或者物体没有继承接口

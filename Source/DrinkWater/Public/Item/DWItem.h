@@ -53,6 +53,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	FGameplayTag IdentityTag;//用来在dataasset中获取到对应的类的基本信息
 	
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
+	TObjectPtr<USoundBase> ItemInteractSound;//这个是交互时的音效，在蓝图中具体设置
+	
 public:	
 	virtual void Tick(float DeltaTime) override;
 
