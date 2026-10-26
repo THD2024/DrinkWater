@@ -38,6 +38,9 @@ protected:
 	
 	bool AddItem(const FItemBag& BagInfo);
 	
+	UFUNCTION(BlueprintCallable)
+	bool IsCurrentItem(){return CurrentItem != nullptr;}
+	
 	void BegintoInteract();
 	
 	UPROPERTY()
