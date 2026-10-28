@@ -7,7 +7,7 @@
 #include"GameplayTagContainer.h"
 #include "InteractableInterface.generated.h"
 
-UINTERFACE(MinimalAPI)
+UINTERFACE(MinimalAPI,Blueprintable)
 class UInteractableInterface : public UInterface
 {
 	GENERATED_BODY()
@@ -33,7 +33,7 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void ItemOwnAction();
 	
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent,BlueprintCallable)
 	FGameplayTag GetTagFromItem();
 	
 	UFUNCTION(BlueprintNativeEvent)

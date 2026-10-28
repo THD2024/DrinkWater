@@ -2,8 +2,6 @@
 
 
 #include "Item/DWItem.h"
-
-#include "IDetailTreeNode.h"
 #include "BlueprintFunctionLibrary/DWBlueprintFunctionLibrary.h"
 
 

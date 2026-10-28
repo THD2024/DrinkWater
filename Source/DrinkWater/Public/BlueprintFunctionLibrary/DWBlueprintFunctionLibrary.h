@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/AnimLayerDataAsset.h"
 #include "Data/DWItemDataAsset.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "DWBlueprintFunctionLibrary.generated.h"
@@ -23,4 +24,7 @@ public:
 	
 	UFUNCTION(BlueprintPure,BlueprintCallable)
 	static UDWItemDataAsset* GetItemDataAssetFromGameState(const UObject* WorldContextObject);
+	
+	UFUNCTION(BlueprintPure,BlueprintCallable)
+	static UAnimLayerDataAsset* GetAnimLayerDataAssetFromGameState(const UObject* WorldContextObject);
 };

@@ -11,3 +11,12 @@ UDWItemDataAsset* ADWGameStateBase::GetItemDataAsset()
 	}
 	return nullptr;
 }
+
+UAnimLayerDataAsset* ADWGameStateBase::GetAnimLayerDataAsset()
+{
+	if (AnimLayerAsset)
+	{
+		return AnimLayerAsset;
+	}
+	return nullptr;
+}

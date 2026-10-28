@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/AnimLayerDataAsset.h"
 #include "Data/DWItemDataAsset.h"
 #include "GameFramework/GameStateBase.h"
 #include "DWGameStateBase.generated.h"
@@ -18,7 +19,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	UDWItemDataAsset* GetItemDataAsset();
 	
+	UFUNCTION(BlueprintCallable)
+	UAnimLayerDataAsset* GetAnimLayerDataAsset();
+	
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UDWItemDataAsset> ItemDataAsset;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UAnimLayerDataAsset> AnimLayerAsset;
 };

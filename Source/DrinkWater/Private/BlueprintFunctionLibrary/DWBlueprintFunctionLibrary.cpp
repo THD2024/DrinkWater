@@ -33,3 +33,13 @@ UDWItemDataAsset* UDWBlueprintFunctionLibrary::GetItemDataAssetFromGameState(con
 	
 	return nullptr;
 }
+
+UAnimLayerDataAsset* UDWBlueprintFunctionLibrary::GetAnimLayerDataAssetFromGameState(const UObject* WorldContextObject)
+{
+	ADWGameStateBase* GameState = Cast<ADWGameStateBase>(UGameplayStatics::GetGameState(WorldContextObject));
+	if (GameState)
+	{
+		return GameState->GetAnimLayerDataAsset();
+	}
+	return nullptr;
+}

@@ -121,12 +121,35 @@ bool ADWCharacter::AddItem(const FItemBag& BagInfo)
 	return BagComponent->AddItemtoBag(BagInfo);
 }
 
+AActor* ADWCharacter::GetCurrentAttachActor()
+{//局限性，只能考虑在单手情况下， 双手情况下等做出了打火机，在在此基础上进行适配
+	TArray<AActor*> AttachedActors;
+	GetAttachedActors(AttachedActors);
+	for (auto& AttachActor :AttachedActors )
+	{
+		if(AttachActor->GetAttachParentSocketName() == FName("GripPoint"))
+		{
+			return AttachActor;
+		}
+	}
+	return nullptr;
+}
+
+void ADWCharacter::HandleItemOwnAction()
+{
+	if (CurrentFocusActor == nullptr)
+	{
+		IInteractableInterface::Execute_ItemOwnAction(CurrentItem);
+		return;
+	}
+}
+
 void ADWCharacter::BegintoInteract()
 {
 	//该函数绑定到按键回调，在这里面进行交互逻辑
 	if (IsSocketOccpied())//插槽被占着就需要判断，没被占着就直接拿
 	{
-		//如果此时手中有，且实现没在可交互物体上，那么按e就是执行物体本身的操作
+		//如果此时手中有，且视线没在可交互物体上，那么按e就是执行物体本身的操作
 		if (CurrentFocusActor == nullptr)
 		{
 			IInteractableInterface::Execute_ItemOwnAction(CurrentItem);
@@ -177,11 +200,13 @@ void ADWCharacter::BegintoInteract()
 		{
 			IInteractableInterface::Execute_SetItemPhysic(CurrentFocusActor,false);
 		}
-		IInteractableInterface::Execute_OnInterAct(CurrentFocusActor, this);//最终都是进行交互，前面全部都是交互前置判断
 	}
 	//证明手中没东西，那么就需要拿起来
 	if (CurrentFocusActor == nullptr ||!CurrentFocusActor->Implements<UInteractableInterface>())return;//没有检测到物体或者物体没有继承接口
 	IInteractableInterface::Execute_OnInterAct(CurrentFocusActor,this);
+	SwitchLinkLayerAnim();//只需要有了交互操作，那么这个时候就直接切换动画，在蓝图中控制玩家重复按交互键导致的动画无效切换的漏洞
+	//这里已知不会触发的边界情况：当玩家手里有东西，视线不对向可交互物体，此时按e会在上面第一种情况被处理。当玩家什么都没有但是按e会被上面处理，交互都不会执行
+	//这里需要注意的情况，当交互的物体是不能拿在手中的，此时会将手中的东西丢弃或者收纳，那么就需要进行动画需要切换会原来的空手动画。
 }
 
 

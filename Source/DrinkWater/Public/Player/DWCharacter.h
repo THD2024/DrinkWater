@@ -38,9 +38,14 @@ protected:
 	
 	bool AddItem(const FItemBag& BagInfo);
 	
-	UFUNCTION(BlueprintCallable)
-	bool IsCurrentItem(){return CurrentItem != nullptr;}
+	UFUNCTION(BlueprintImplementableEvent)
+	void SwitchLinkLayerAnim();//时机在于当手中只要有东西就行了
 	
+	UFUNCTION(BlueprintCallable)
+	AActor* GetCurrentAttachActor();
+	
+	void HandleItemOwnAction();
+
 	void BegintoInteract();
 	
 	UPROPERTY()
