@@ -17,7 +17,7 @@ class DRINKWATER_API ADWPickupItem : public ADWItem
 public:
 	ADWPickupItem();
 	
-	virtual void OnInterAct_Implementation(const AActor* OverlapActor) override;
+	virtual void OnInterAct_Implementation(const AActor* OverlapActor,const ACharacter* OwnerPlayer) override;
 	
 	virtual void SetItemPhysic_Implementation(bool CanPhysical) override;
 	

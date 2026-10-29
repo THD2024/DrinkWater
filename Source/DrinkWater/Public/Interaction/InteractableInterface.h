@@ -22,7 +22,7 @@ class DRINKWATER_API IInteractableInterface
 
 public:
 	UFUNCTION(BlueprintNativeEvent)
-	void OnInterAct(const AActor* OverlapActor);//需要执行交互的时候
+	void OnInterAct(const AActor* OverlapActor,const ACharacter* OwnerPlayer);//需要执行交互的时候
 	
 	UFUNCTION(BlueprintNativeEvent)
 	void OnFocus();//当射线检测到了可交互的物体

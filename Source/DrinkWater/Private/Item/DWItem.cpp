@@ -3,6 +3,8 @@
 
 #include "Item/DWItem.h"
 #include "BlueprintFunctionLibrary/DWBlueprintFunctionLibrary.h"
+#include "GameFramework/Character.h"
+#include "Player/DWCharacter.h"
 
 
 ADWItem::ADWItem()
@@ -33,19 +35,26 @@ void ADWItem::BeginPlay()
 	
 }
 
-void ADWItem::OnInterAct_Implementation(const AActor* OverlapActor)//处理在交互时该物体要干什么
+bool ADWItem::PlayAnimFromItemAsset(const ACharacter* OwnerPlayer)
 {
-	//有动画就播放没有动画就走另一条交互
 	UDWItemDataAsset*ItemDA = UDWBlueprintFunctionLibrary::GetItemDataAssetFromGameState(this);
+	if (!OwnerPlayer)return false;
 	if (ItemDA)
 	{
 		FDWItemInfo ItemInfo = ItemDA->GetItemInfoByTag(IdentityTag);
-		if (ItemInfo.ItemMontage)
+		if (ItemInfo.ItemBeginMontage)
 		{
-			//播放item的交互动画
-			return;
+			return true;
 		}
 	}
+	return false;
+}
+
+void ADWItem::OnInterAct_Implementation(const AActor* OverlapActor,const ACharacter* OwnerPlayer)//处理在交互时该物体要干什么
+{
+	//有动画就播放没有动画就走另一条交互
+	//这里规定死，只播放物体本身的动画，角色的动画有角色那边自己播放
+	if (PlayAnimFromItemAsset(OwnerPlayer)) return;
 	OwnInteractAnim();
 }
 

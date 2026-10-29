@@ -2,9 +2,9 @@
 
 
 #include "Player/DWCharacter.h"
-
 #include "DWGameplayTags.h"
 #include "BlueprintFunctionLibrary/DWBlueprintFunctionLibrary.h"
+#include "Data/CharInteractAnimDataAsset.h"
 #include"Interaction/InteractableInterface.h"
 #include "Player/DWPlayerController.h"
 #include "Player/DWPlayerState.h"
@@ -14,6 +14,12 @@
 ADWCharacter::ADWCharacter()
 {
 	BagComponent = CreateDefaultSubobject<UDWBagComponent>("BagComponent");
+}
+
+void ADWCharacter::TimetoSwithAnim()
+{
+	SwitchLinkLayerAnim();//动画通知后，此时可以进行切换，
+	
 }
 
 void ADWCharacter::BeginPlay()
@@ -118,6 +124,7 @@ bool ADWCharacter::IsSocketOccpied()
 
 bool ADWCharacter::AddItem(const FItemBag& BagInfo)
 {
+	//这里播放收纳动画
 	return BagComponent->AddItemtoBag(BagInfo);
 }
 
@@ -189,6 +196,7 @@ void ADWCharacter::BegintoInteract()
 				//丢掉后添加物理特性，掉在地上
 				if (CurrentItem->Implements<UInteractableInterface>())
 				{
+					//丢弃动画也可以在这里播放
 					IInteractableInterface::Execute_SetItemPhysic(CurrentItem,true);
 					CurrentItem = nullptr;//掉在地上不符合currentitem的定义，那么此时重置currentitem
 				}
@@ -203,10 +211,33 @@ void ADWCharacter::BegintoInteract()
 	}
 	//证明手中没东西，那么就需要拿起来
 	if (CurrentFocusActor == nullptr ||!CurrentFocusActor->Implements<UInteractableInterface>())return;//没有检测到物体或者物体没有继承接口
-	IInteractableInterface::Execute_OnInterAct(CurrentFocusActor,this);
-	SwitchLinkLayerAnim();//只需要有了交互操作，那么这个时候就直接切换动画，在蓝图中控制玩家重复按交互键导致的动画无效切换的漏洞
+	//在这里可以播放角色的交互动画，根据当前的currentfocusactor来播放对应的交互动画
+	FGameplayTag ItemTag = IInteractableInterface::Execute_GetTagFromItem(CurrentFocusActor);
+	PlayBeginCharInteractAnim(ItemTag);
+	IInteractableInterface::Execute_OnInterAct(CurrentFocusActor,this,this);
+	// SwitchLinkLayerAnim();//只需要有了交互操作，那么这个时候就直接切换动画，在蓝图中控制玩家重复按交互键导致的动画无效切换的漏洞
 	//这里已知不会触发的边界情况：当玩家手里有东西，视线不对向可交互物体，此时按e会在上面第一种情况被处理。当玩家什么都没有但是按e会被上面处理，交互都不会执行
 	//这里需要注意的情况，当交互的物体是不能拿在手中的，此时会将手中的东西丢弃或者收纳，那么就需要进行动画需要切换会原来的空手动画。
+}
+
+void ADWCharacter::PlayBeginCharInteractAnim(const FGameplayTag& TypeTag)
+{
+	FCharInteractAnim AnimAsset = PlayerInterActAnimAsset->GetRelevantAnimAssetbyTag(TypeTag);
+	if (AnimAsset.BeginInteractAnim && FirstPersonMeshAnimIns)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *GetNameSafe(AnimAsset.BeginInteractAnim));
+		FirstPersonMeshAnimIns->Montage_Play(AnimAsset.BeginInteractAnim,1.f);
+	}
+}
+
+void ADWCharacter::PlayEndCharInteractAnim(const FGameplayTag& TypeTag)
+{
+	if (!PlayerInterActAnimAsset)return;
+	const FCharInteractAnim AnimAsset = PlayerInterActAnimAsset->GetRelevantAnimAssetbyTag(TypeTag);
+	if (AnimAsset.EndInteractAnim && FirstPersonMeshAnimIns)
+	{
+		FirstPersonMeshAnimIns->Montage_Play(AnimAsset.EndInteractAnim,1.f);
+	}
 }
 
 

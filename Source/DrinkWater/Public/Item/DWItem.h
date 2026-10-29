@@ -24,7 +24,9 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	
-	virtual void OnInterAct_Implementation(const AActor* OverlapActor) override;
+	bool PlayAnimFromItemAsset(const ACharacter* OwnerPlayer);
+
+	virtual void OnInterAct_Implementation(const AActor* OverlapActor,const ACharacter* OwnerPlayer) override;
 	
 	virtual void OnFocus_Implementation() override;
 	

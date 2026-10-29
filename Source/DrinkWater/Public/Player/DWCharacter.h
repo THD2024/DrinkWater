@@ -11,6 +11,7 @@
 
 class USpringArmComponent;
 class UCameraComponent;
+class UCharInteractAnimDataAsset;
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FTriggerCueWidgetDelegate,bool,AActor*);
 
@@ -24,6 +25,8 @@ public:
 	ADWCharacter();
 	
 	FTriggerCueWidgetDelegate OnTriggerCueWidget;
+	
+	void TimetoSwithAnim();
 
 protected:
 	virtual void BeginPlay() override;
@@ -39,7 +42,7 @@ protected:
 	bool AddItem(const FItemBag& BagInfo);
 	
 	UFUNCTION(BlueprintImplementableEvent)
-	void SwitchLinkLayerAnim();//时机在于当手中只要有东西就行了
+	void SwitchLinkLayerAnim();//时机在于交互蒙太奇播放完后
 	
 	UFUNCTION(BlueprintCallable)
 	AActor* GetCurrentAttachActor();
@@ -48,11 +51,18 @@ protected:
 
 	void BegintoInteract();
 	
+	void PlayBeginCharInteractAnim(const FGameplayTag& TypeTag);//播放角色交互动画
+	
+	void PlayEndCharInteractAnim(const FGameplayTag& TypeTag);//播放角色交互动画
+	
 	UPROPERTY()
 	TObjectPtr<UDWAbilitySystemComponent> DwAbilitySystemComponent;
 	
 	UPROPERTY()
 	TObjectPtr<UDWBagComponent> BagComponent;
+	
+	UPROPERTY(BlueprintReadWrite)
+	TObjectPtr<UAnimInstance> FirstPersonMeshAnimIns;
 	
 	UPROPERTY()
 	TObjectPtr<AActor> CurrentItem;//表示当前手中拿的item
@@ -63,6 +73,8 @@ protected:
 	UPROPERTY()
 	TObjectPtr<AActor> CurrentFocusActor;//当前被检测到的物体
 
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UCharInteractAnimDataAsset> PlayerInterActAnimAsset;
 	
 
 public:	

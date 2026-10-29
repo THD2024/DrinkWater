@@ -16,7 +16,7 @@
  {
 	 GENERATED_BODY()
  	
- 	FDWItemInfo() : Name(NAME_None),Description(NAME_None),ItemPhoto(nullptr),ActorMontage(nullptr),ItemMontage(nullptr){}
+ 	FDWItemInfo() : Name(NAME_None),Description(NAME_None),ItemPhoto(nullptr),ItemBeginMontage(nullptr){}
  	
  	UPROPERTY(EditAnywhere, BlueprintReadWrite)
  	FName Name = FName("");
@@ -28,10 +28,10 @@
  	UTexture2D* ItemPhoto = nullptr;
  	
  	UPROPERTY(EditAnywhere, BlueprintReadWrite)
- 	TObjectPtr<UAnimMontage> ActorMontage = nullptr;
+ 	TObjectPtr<UAnimMontage> ItemBeginMontage = nullptr;//物体交互动画
  	
  	UPROPERTY(EditAnywhere, BlueprintReadWrite)
- 	TObjectPtr<UAnimMontage> ItemMontage = nullptr;
+ 	TObjectPtr<UAnimMontage> ItemEndMontage = nullptr;//物体交互动画
  	
  	UPROPERTY(EditAnywhere, BlueprintReadWrite)
  	FGameplayTag IdentityTag;
