@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
-#include "InterActAnimNotify.generated.h"
+#include "BeginAnimNotify.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class DRINKWATER_API UInterActAnimNotify : public UAnimNotify
+class DRINKWATER_API UBeginAnimNotify : public UAnimNotify
 {
 	GENERATED_BODY()
 	

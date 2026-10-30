@@ -15,6 +15,14 @@ class UCharInteractAnimDataAsset;
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FTriggerCueWidgetDelegate,bool,AActor*);
 
+UENUM()
+enum class EInteractState : uint8
+{
+	Empty,
+	Unequiping,
+	Equipping
+};
+
 UCLASS()
 class DRINKWATER_API ADWCharacter : public ACharacter,public IAbilitySystemInterface
 {
@@ -26,7 +34,9 @@ public:
 	
 	FTriggerCueWidgetDelegate OnTriggerCueWidget;
 	
-	void TimetoSwithAnim();
+	void BegintoSwithAnim();
+	
+	void EndtoSwithBegin();
 
 protected:
 	virtual void BeginPlay() override;
@@ -46,14 +56,12 @@ protected:
 	
 	UFUNCTION(BlueprintCallable)
 	AActor* GetCurrentAttachActor();
-	
-	void HandleItemOwnAction();
 
 	void BegintoInteract();
 	
-	void PlayBeginCharInteractAnim(const FGameplayTag& TypeTag);//播放角色交互动画
+	void PlayBeginCharInteractAnim();//播放角色交互动画
 	
-	void PlayEndCharInteractAnim(const FGameplayTag& TypeTag);//播放角色交互动画
+	void PlayEndCharInteractAnim();//播放角色交互动画
 	
 	UPROPERTY()
 	TObjectPtr<UDWAbilitySystemComponent> DwAbilitySystemComponent;
@@ -76,6 +84,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UCharInteractAnimDataAsset> PlayerInterActAnimAsset;
 	
+	EInteractState InteractState = EInteractState::Empty;
 
 public:	
 	virtual void Tick(float DeltaTime) override;
