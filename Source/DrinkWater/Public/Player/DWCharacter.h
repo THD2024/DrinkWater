@@ -55,7 +55,7 @@ protected:
 	void SwitchLinkLayerAnim();//时机在于交互蒙太奇播放完后
 	
 	UFUNCTION(BlueprintCallable)
-	AActor* GetCurrentAttachActor();
+	AActor* GetCurrentAttachActor();//不依赖于currentitem，而是获取当前手中的item
 
 	void BegintoInteract();
 	
@@ -72,8 +72,8 @@ protected:
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<UAnimInstance> FirstPersonMeshAnimIns;
 	
-	UPROPERTY()
-	TObjectPtr<AActor> CurrentItem;//表示当前手中拿的item
+	// UPROPERTY()
+	// TObjectPtr<AActor> CurrentItem;//表示当前手中拿的item
 	
 	UPROPERTY()
 	TObjectPtr<AActor> LastFocusActor;//上一个被检测到的物体

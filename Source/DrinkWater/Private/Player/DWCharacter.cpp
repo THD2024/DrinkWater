@@ -121,7 +121,7 @@ bool ADWCharacter::IsSocketOccpied()
 	{
 		if(AttachActor->GetAttachParentSocketName() == FName("GripPoint"))
 		{
-			CurrentItem = AttachActor;//更新
+			// CurrentItem = AttachActor;//更新
 			return true;
 		}
 	}
@@ -152,8 +152,10 @@ AActor* ADWCharacter::GetCurrentAttachActor()
 void ADWCharacter::BegintoInteract()
 {
 	//该函数绑定到按键回调，在这里面进行交互逻辑
+	if (InteractState != EInteractState::Empty)return;//防止当前在进行其他交互动作的时候，新的状态进来导致争抢
 	if (IsSocketOccpied())//插槽被占着就需要判断，没被占着就直接拿
 	{
+		AActor* CurrentItem = GetCurrentAttachActor();//将currentitem作为一个局部变量，只在判断手中有东西的时候才会赋值
 		//如果此时手中有，且视线没在可交互物体上，那么按e就是执行物体本身的操作
 		if (CurrentFocusActor == nullptr)
 		{
@@ -176,13 +178,13 @@ void ADWCharacter::BegintoInteract()
 				{
 					//现在背包里面存的是数据，存好后直接将当前世界中的actor销毁
 					//这里播放end中的存入动画
-					// PlayEndCharInteractAnim();
+					PlayEndCharInteractAnim();
 					CurrentItem->Destroy();
 				}
 				else//当包满后，无法存入，就需要将手中的东西给扔掉，然后在拾取地上的新东西	
 				{
 					//这里可以播放丢弃动画，当然我认为这里根本不需要为丢弃准备一个动画，直接脱离就行了
-					// PlayEndCharInteractAnim();
+					PlayEndCharInteractAnim();//这里可仍然保持收纳动画，只不过会在收纳的一刻直接脱落，因为背包满了.
 					CurrentItem->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 				}
 			}
@@ -198,6 +200,7 @@ void ADWCharacter::BegintoInteract()
 				if (CurrentItem->Implements<UInteractableInterface>())
 				{
 					//丢弃动画也可以在这里播放,这里和上面一样，不需要特别的丢弃动画，就直接脱离就行了
+					PlayEndCharInteractAnim();
 					IInteractableInterface::Execute_SetItemPhysic(CurrentItem,true);
 				}
 			}
@@ -209,19 +212,23 @@ void ADWCharacter::BegintoInteract()
 			IInteractableInterface::Execute_SetItemPhysic(CurrentFocusActor,false);
 		}
 	}
+	else//手中没有东西的时候
+	{
+		//直接end，走里面的空手逻辑，这样保证每种情况都能够走到end，而且与每种情况中的特殊操作对应。
+		PlayEndCharInteractAnim();
+	}
 	//证明手中没东西，那么就需要拿起来
 	if (CurrentFocusActor == nullptr ||!CurrentFocusActor->Implements<UInteractableInterface>())return;//没有检测到物体或者物体没有继承接口
-	FGameplayTag ItemTag = IInteractableInterface::Execute_GetTagFromItem(CurrentFocusActor);
+	// FGameplayTag ItemTag = IInteractableInterface::Execute_GetTagFromItem(CurrentFocusActor);
 	//这里播放角色的新交互，应该始终是先end再begin的思路。end是手中的物体，begin是对着的物体
 	//1.空手，那么end动画是空，然后播放begin
 	//2.手中有东西，此时应该是先播放手中东西的end动画，再播放新对象的begin动画，手中有分为两种，可存储和不可存储，可存储就单纯的一个收纳动作，不可存储直接不需要动画，空就行了
 	//end动画只有空手空动画，收纳动画和放下动画
 	//begin动画只有通用伸手动画，特殊物体的拾取动画
-	PlayEndCharInteractAnim();//放这里是保证end一定会在交互中触发，这样才能触发后面的begin和animlayer。
+	// PlayEndCharInteractAnim();//放这里是保证end一定会在交互中触发，这样才能触发后面的begin和animlayer。
 	//end动画已经在上面处理了，现在在后面就播放这个自己的交互动画,不过这里需要注意的是不要让两个动画争抢
 	// PlayBeginCharInteractAnim(ItemTag);//这里有角色自己播放自己对应的交互动画。
 	IInteractableInterface::Execute_OnInterAct(CurrentFocusActor,this,this);
-	CurrentItem = nullptr;//重置
 	// SwitchLinkLayerAnim();//只需要有了交互操作，那么这个时候就直接切换动画，在蓝图中控制玩家重复按交互键导致的动画无效切换的漏洞
 	//这里已知不会触发的边界情况：当玩家手里有东西，视线不对向可交互物体，此时按e会在上面第一种情况被处理。当玩家什么都没有但是按e会被上面处理，交互都不会执行
 	//这里需要注意的情况，当交互的物体是不能拿在手中的，此时会将手中的东西丢弃或者收纳，那么就需要进行动画需要切换会原来的空手动画。
@@ -238,13 +245,20 @@ void ADWCharacter::PlayBeginCharInteractAnim()
 		if (AnimAsset.BeginInteractAnim && FirstPersonMeshAnimIns)
 		{
 			FirstPersonMeshAnimIns->Montage_Play(AnimAsset.BeginInteractAnim,1.f);
+			//montage动画播放后，会自己触发下一阶段，然后将状态重置为empty
+		}
+		else
+		{
+			//这里还有种情况，如果当前物体没有角色交互动画，或者还没有安装，那么应该直接设置状态为空，
+			InteractState = EInteractState::Empty;
 		}
 	}
 	else
 	{
 		//视线没有对上东西，或者对上的东西不是可以交互的，那么这个时候直接调用动画接口切换函数
-		SwitchLinkLayerAnim();//通知触发的函数里面需要重置state，所以这里我直接调用的是切换函数，便于我在这里切换状态
 		InteractState = EInteractState::Empty;
+		SwitchLinkLayerAnim();//通知触发的函数里面需要重置state，所以这里我直接调用的是切换函数，便于我在这里切换状态
+		
 	}
 	
 }
@@ -254,20 +268,27 @@ void ADWCharacter::PlayEndCharInteractAnim()
 	if(InteractState != EInteractState::Empty)return;//动画的播放必须要保证在当前是empty的情况下在进行
 
 	InteractState = EInteractState::Unequiping;
-	if (!PlayerInterActAnimAsset)return;
-	if (!CurrentItem)//手中是空的,直接设置状态为empty
+	if (!PlayerInterActAnimAsset)//当数据资产没有设置
 	{
+		UE_LOG(LogTemp, Warning, TEXT("PlayerInterActAnimAsset is null"));
+		InteractState = EInteractState::Empty;//状态要重置
+		return;
+	}
+	if (!GetCurrentAttachActor())//手中是空的,直接设置状态为empty,不需要播放结束动画
+	{//这里有一个边界情况，因为在上面我已经把currentitem存入后就将它销毁了，那么正常情况来看，这里的attachactor也是空的
+		//但是事实上这并不是标准意义上的手中没有东西，而是我需要先收纳，手中才没有东西，也就是这种情况，我要先播放收纳动画，在销毁
 		InteractState = EInteractState::Empty;
 		//调用后面的begin
 		PlayBeginCharInteractAnim();
 		return;
 	}
 	//手中有东西的情况,播放动画，然后会等动画通知触发endtoswitchbegin
-	FGameplayTag TypeTag = IInteractableInterface::Execute_GetTagFromItem(CurrentItem);
+	FGameplayTag TypeTag = IInteractableInterface::Execute_GetTagFromItem(GetCurrentAttachActor());
 	const FCharInteractAnim AnimAsset = PlayerInterActAnimAsset->GetRelevantAnimAssetbyTag(TypeTag);
 	if (AnimAsset.EndInteractAnim && FirstPersonMeshAnimIns)
 	{
 		FirstPersonMeshAnimIns->Montage_Play(AnimAsset.EndInteractAnim,1.f);
+		//播放对应的收纳动画后，会自动触发新的通知设置将状态重置为empty
 	}
 	else//处理边界情况，如果这个currentitem没有end动画，虽然这个情况基本在后期不会发生
 	{
