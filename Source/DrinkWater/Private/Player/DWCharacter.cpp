@@ -200,15 +200,18 @@ void ADWCharacter::BegintoInteract()
 	 * 主要是第二种情况替换对应的动画蓝图，这里触发的情况只有一种情况，那么就是只有当是可拾取物体，拾取到了手上才需要进行动画蓝图切换，其他情况
 	 * 都是单纯的播放一个伸手动画然后继续回到原来的动画蓝图。第三阶段触发情况只有拾取动画播放的末尾和物体到达手中的时机一致。
 	 */
-	if (!CurrentFocusActor || !Cast<UInteractableInterface>(CurrentFocusActor))
+	
+	//如果当前手中有东西，并且但是视线对上的是不可交互或者没有东西，这个时候应该考虑是对物体本身的操作而不是交互.
+	if (InteractState != EInteractState::Empty)return;//防止当前在进行其他交互动作的时候，新的状态进来导致争抢
+	if (!CurrentFocusActor || !Cast<ADWItem>(CurrentFocusActor))
 	{
 		if (GetCurrentAttachActor() && GetCurrentAttachActor()->Implements<UInteractableInterface>())
 		{
 			IInteractableInterface::Execute_ItemOwnAction(GetCurrentAttachActor());
 		}
+		InteractState = EInteractState::Empty;
+		return;
 	}
-	//如果当前手中有东西，并且但是视线对上的是不可交互或者没有东西，这个时候应该考虑是对物体本身的操作而不是交互.
-	if (InteractState != EInteractState::Empty)return;//防止当前在进行其他交互动作的时候，新的状态进来导致争抢
 	PlayEndCharInteractAnim();//直接进入end逻辑，需要注意的是end逻辑这里，针对的是手中有的，而不是视线对着的
 	
 }
