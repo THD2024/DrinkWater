@@ -36,7 +36,10 @@ public:
 	
 	void BegintoSwithAnim();
 	
-	void EndtoSwithBegin();
+	void EndtoSwithBegin();//第一阶段动画触发，准备进入阶段的中转站
+	
+	void HandleAnimSwitch();//第三阶段，当begin触发后，有begin的动画触发
+	
 
 protected:
 	virtual void BeginPlay() override;
@@ -62,6 +65,7 @@ protected:
 	void PlayBeginCharInteractAnim();//播放角色交互动画
 	
 	void PlayEndCharInteractAnim();//播放角色交互动画
+	
 	
 	UPROPERTY()
 	TObjectPtr<UDWAbilitySystemComponent> DwAbilitySystemComponent;

@@ -18,12 +18,43 @@ ADWCharacter::ADWCharacter()
 
 void ADWCharacter::BegintoSwithAnim()
 {
-	InteractState = EInteractState::Empty;
-	SwitchLinkLayerAnim();//动画通知后，此时可以进行切换，
+	//这里面需要保证对应物体的逻辑和动画的对应
+	//如果是拾取动画就要就要拾取，如果是交互动画，不要管,而且也只有拾取动画的情况需要切换动画蓝图
+	//这里最妙的是，我的交互接口里面包含了对于拾取和普通交互的情况，我不需要在这里细分，我直接调用交互接口就行了
+	if (!CurrentFocusActor || !CurrentFocusActor->Implements<UInteractableInterface>())
+	{//保险吧，虽然这种情况也不可能发生
+		InteractState = EInteractState::Empty;
+		SwitchLinkLayerAnim();
+	}
+	IInteractableInterface::Execute_OnInterAct(CurrentFocusActor,this,this);
 }
 
 void ADWCharacter::EndtoSwithBegin()
 {
+	//进入这里表示动画时机到了，我们需要判断手中的东西是可收纳还是不可收纳，然后根据情况去写逻辑
+	if (AActor*CurrentAttachActor =  GetCurrentAttachActor())//手中没东西的情况在playend中，处理了，这里还是留个心眼
+	{
+		if (CurrentAttachActor->ActorHasTag(FName("PNC")))//不可收纳
+		{
+			//直接脱落
+			CurrentAttachActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		}
+		else if (CurrentAttachActor->ActorHasTag(FName("PAC")))//可以收纳
+		{
+			if (CurrentAttachActor->Implements<UInteractableInterface>())
+			{
+				FGameplayTag IdentityTag = IInteractableInterface::Execute_GetTagFromItem(CurrentAttachActor);
+				if (!UDWBlueprintFunctionLibrary::GetItemDataAssetFromGameState(this))return;
+				FDWItemInfo Iteminfo = UDWBlueprintFunctionLibrary::GetItemDataAssetFromGameState(this)->GetItemInfoByTag(IdentityTag);
+				if (!Iteminfo.Name.IsValid() || !Iteminfo.ItemPhoto)return;//如果名字是空,图片是空，那就说明返回的是个空的info，就不存，反之存.虽然这种情况逻辑上不存在，但是以防万一
+				FItemBag BagInfo(Iteminfo.Name,Iteminfo.ItemPhoto);
+				if (!AddItem(BagInfo))//添加,如果没添加成功就执行下面的逻辑，直接扔掉
+				{
+					CurrentAttachActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+				}
+			}
+		}
+	}
 	InteractState = EInteractState::Empty;
 	PlayBeginCharInteractAnim();
 }
@@ -151,91 +182,42 @@ AActor* ADWCharacter::GetCurrentAttachActor()
 
 void ADWCharacter::BegintoInteract()
 {
-	//该函数绑定到按键回调，在这里面进行交互逻辑
+	/*现在重新想，这个函数是当玩家按e后用来进行交互的第一层入口，这里面前置处理的是各种情况下比如手中有东西没有东西，我应该收纳还是直接
+	 * 丢弃，但是现在动画进来了，出现问题了，不应该逻辑先行，而是动画先行，保证动画和逻辑衔接。这也就说明一件事，顺序反了。更合理的方法
+	 * 应该是我不急于判断当前手中逻辑怎么走，而是先走对应的动画入口，然后被通知调用进入逻辑入口
+	 * 当前情况应该重构为：
+	 * 第一阶段：
+	 * 进入该函数后，只有两种情况，一种当前的e是玩家随便乱按的，或者物体不可交互，这个时候直接退出函数，第二种情况，当前确实准心对准了可交互物体
+	 * playendanim逻辑，在这个函数里面去处理是播放丢弃动画，收纳动画，还是不播动画，直接进入beginanim.
+	 * 先不说进入到beginanim，当播放丢弃动画或者收纳动画后，应该在动画合适时机有一个通知，这个时候进逻辑，物品丢弃或者存入背包。
+	 * 第二阶段：
+	 * 进入到beginanim，在这里面处理交互的可拾取物体，还是单纯的交互物体，根据分类进入对应的逻辑分支，播放对应的动画，前者可拾取物体
+	 * 有对应的拾取动画，这里需要动画通知来实现在某个合适的时间节点来拾取到。后者则只需要播放一个简单的交互动作，在动作末尾，有物体自己播放对应的交互动画
+	 * 由于在第一阶段不可交互的情况被过滤了，所以不用考虑别的情况。当是简单的交互动作，也需要在动作末尾触发第三阶段。也就是说第三阶段入口是一致的，不会有多个
+	 * 入口，具体情况在第三阶段函数内部进行分开
+	 * 第三阶段:
+	 * 这一阶段有两种情况，状态重置和切换蓝图动画重置，状态重置就是只需要设置为empty允许玩家下次e键交互
+	 * 主要是第二种情况替换对应的动画蓝图，这里触发的情况只有一种情况，那么就是只有当是可拾取物体，拾取到了手上才需要进行动画蓝图切换，其他情况
+	 * 都是单纯的播放一个伸手动画然后继续回到原来的动画蓝图。第三阶段触发情况只有拾取动画播放的末尾和物体到达手中的时机一致。
+	 */
+	if (!CurrentFocusActor || !Cast<UInteractableInterface>(CurrentFocusActor))
+	{
+		if (GetCurrentAttachActor() && GetCurrentAttachActor()->Implements<UInteractableInterface>())
+		{
+			IInteractableInterface::Execute_ItemOwnAction(GetCurrentAttachActor());
+		}
+	}
+	//如果当前手中有东西，并且但是视线对上的是不可交互或者没有东西，这个时候应该考虑是对物体本身的操作而不是交互.
 	if (InteractState != EInteractState::Empty)return;//防止当前在进行其他交互动作的时候，新的状态进来导致争抢
-	if (IsSocketOccpied())//插槽被占着就需要判断，没被占着就直接拿
-	{
-		AActor* CurrentItem = GetCurrentAttachActor();//将currentitem作为一个局部变量，只在判断手中有东西的时候才会赋值
-		//如果此时手中有，且视线没在可交互物体上，那么按e就是执行物体本身的操作
-		if (CurrentFocusActor == nullptr)
-		{
-			IInteractableInterface::Execute_ItemOwnAction(CurrentItem);
-			CurrentItem = nullptr;
-			return;
-		}
-		//如果手中插槽满了，就需要判断此时物品能否收纳，不能就丢弃。然后在去拿新的东西。
-		//最终判断标准只有一个，手中的是不是inventoryitem，是收纳，不然就丢弃
-		if (CurrentItem && CurrentItem->ActorHasTag(FName("PAC")))
-		{
-			if (CurrentItem->Implements<UInteractableInterface>())
-			{
-				FGameplayTag IdentityTag = IInteractableInterface::Execute_GetTagFromItem(CurrentItem);
-				if (!UDWBlueprintFunctionLibrary::GetItemDataAssetFromGameState(this))return;
-				FDWItemInfo Iteminfo = UDWBlueprintFunctionLibrary::GetItemDataAssetFromGameState(this)->GetItemInfoByTag(IdentityTag);
-				if (!Iteminfo.Name.IsValid() || !Iteminfo.ItemPhoto)return;//如果名字是空,图片是空，那就说明返回的是个空的info，就不存，反之存.虽然这种情况逻辑上不存在，但是以防万一
-				FItemBag BagInfo(Iteminfo.Name,Iteminfo.ItemPhoto);
-				if (AddItem(BagInfo))//如果添加完成就可以将currentitme重置了。
-				{
-					//现在背包里面存的是数据，存好后直接将当前世界中的actor销毁
-					//这里播放end中的存入动画
-					PlayEndCharInteractAnim();
-					CurrentItem->Destroy();
-				}
-				else//当包满后，无法存入，就需要将手中的东西给扔掉，然后在拾取地上的新东西	
-				{
-					//这里可以播放丢弃动画，当然我认为这里根本不需要为丢弃准备一个动画，直接脱离就行了
-					PlayEndCharInteractAnim();//这里可仍然保持收纳动画，只不过会在收纳的一刻直接脱落，因为背包满了.
-					CurrentItem->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-				}
-			}
-			
-		}
-		else
-		{
-			//如果不是可收纳，就判断是不是可拾取的，这类直接扔掉
-			if (CurrentItem && CurrentItem->ActorHasTag(FName("PNC")))
-			{
-				CurrentItem->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-				//丢掉后添加物理特性，掉在地上
-				if (CurrentItem->Implements<UInteractableInterface>())
-				{
-					//丢弃动画也可以在这里播放,这里和上面一样，不需要特别的丢弃动画，就直接脱离就行了
-					PlayEndCharInteractAnim();
-					IInteractableInterface::Execute_SetItemPhysic(CurrentItem,true);
-				}
-			}
-		}
-		//第三种情况就不需要管了，因为根本不会到手上来。直接交互就行了
-		//现在要考虑如果此时实现对准的是先前掉落的物体，那么就需要关闭物理模拟
-		if (CurrentFocusActor->Implements<UInteractableInterface>())
-		{
-			IInteractableInterface::Execute_SetItemPhysic(CurrentFocusActor,false);
-		}
-	}
-	else//手中没有东西的时候
-	{
-		//直接end，走里面的空手逻辑，这样保证每种情况都能够走到end，而且与每种情况中的特殊操作对应。
-		PlayEndCharInteractAnim();
-	}
-	//证明手中没东西，那么就需要拿起来
-	if (CurrentFocusActor == nullptr ||!CurrentFocusActor->Implements<UInteractableInterface>())return;//没有检测到物体或者物体没有继承接口
-	// FGameplayTag ItemTag = IInteractableInterface::Execute_GetTagFromItem(CurrentFocusActor);
-	//这里播放角色的新交互，应该始终是先end再begin的思路。end是手中的物体，begin是对着的物体
-	//1.空手，那么end动画是空，然后播放begin
-	//2.手中有东西，此时应该是先播放手中东西的end动画，再播放新对象的begin动画，手中有分为两种，可存储和不可存储，可存储就单纯的一个收纳动作，不可存储直接不需要动画，空就行了
-	//end动画只有空手空动画，收纳动画和放下动画
-	//begin动画只有通用伸手动画，特殊物体的拾取动画
-	// PlayEndCharInteractAnim();//放这里是保证end一定会在交互中触发，这样才能触发后面的begin和animlayer。
-	//end动画已经在上面处理了，现在在后面就播放这个自己的交互动画,不过这里需要注意的是不要让两个动画争抢
-	// PlayBeginCharInteractAnim(ItemTag);//这里有角色自己播放自己对应的交互动画。
-	IInteractableInterface::Execute_OnInterAct(CurrentFocusActor,this,this);
-	// SwitchLinkLayerAnim();//只需要有了交互操作，那么这个时候就直接切换动画，在蓝图中控制玩家重复按交互键导致的动画无效切换的漏洞
-	//这里已知不会触发的边界情况：当玩家手里有东西，视线不对向可交互物体，此时按e会在上面第一种情况被处理。当玩家什么都没有但是按e会被上面处理，交互都不会执行
-	//这里需要注意的情况，当交互的物体是不能拿在手中的，此时会将手中的东西丢弃或者收纳，那么就需要进行动画需要切换会原来的空手动画。
+	PlayEndCharInteractAnim();//直接进入end逻辑，需要注意的是end逻辑这里，针对的是手中有的，而不是视线对着的
+	
 }
 
 void ADWCharacter::PlayBeginCharInteractAnim()
 {//内部判断是播放动画还是切换动画接口
+	//两种情况：实现所对可在手上或不可在手上,前面过滤了视线所对物体为空或者不是可交互物体，这里不用额外判断
+	//其实这里逻辑可以在简单一点，因为处理的两种情况都是要播放动画，这里只需要单纯播放动画，不需要判断额外，至于是拿到手上还是只一个动作就只需要在
+	//通知调用的函数中处理了
 	if(InteractState != EInteractState::Empty)return;
 	InteractState = EInteractState::Equipping;
 	if (CurrentFocusActor && CurrentFocusActor->Implements<UInteractableInterface>())
@@ -250,15 +232,10 @@ void ADWCharacter::PlayBeginCharInteractAnim()
 		else
 		{
 			//这里还有种情况，如果当前物体没有角色交互动画，或者还没有安装，那么应该直接设置状态为空，
+			//这种情况后期基本上也不会存在，不过保险
+			UE_LOG(LogTemp, Warning, TEXT("PlayBeginCharInteractAnim Anim Not Found"));
 			InteractState = EInteractState::Empty;
 		}
-	}
-	else
-	{
-		//视线没有对上东西，或者对上的东西不是可以交互的，那么这个时候直接调用动画接口切换函数
-		InteractState = EInteractState::Empty;
-		SwitchLinkLayerAnim();//通知触发的函数里面需要重置state，所以这里我直接调用的是切换函数，便于我在这里切换状态
-		
 	}
 	
 }
@@ -288,7 +265,7 @@ void ADWCharacter::PlayEndCharInteractAnim()
 	if (AnimAsset.EndInteractAnim && FirstPersonMeshAnimIns)
 	{
 		FirstPersonMeshAnimIns->Montage_Play(AnimAsset.EndInteractAnim,1.f);
-		//播放对应的收纳动画后，会自动触发新的通知设置将状态重置为empty
+		//播放对应的动画，丢弃或者收纳，在通知触发的函数中需要设置物体掉落或者消失根据不同的情况
 	}
 	else//处理边界情况，如果这个currentitem没有end动画，虽然这个情况基本在后期不会发生
 	{
@@ -296,6 +273,17 @@ void ADWCharacter::PlayEndCharInteractAnim()
 		//调用后面的begin
 		PlayBeginCharInteractAnim();
 	}
+}
+
+void ADWCharacter::HandleAnimSwitch()
+{
+	//这被触发的思路也是清晰的，只有当这个物体可以被交互并且有动画的时候直接到这里来，就会被动画通知调用，动画切换逻辑就交给蓝图中的逻辑
+	//这里需要明确，这个函数触发的入口就是Playanim后，通知触发的，但是该函数与BegintoSwithAnim是同步的，不是和以前一样begintoswithanim触发这个函数
+	//这里面处理两种情况，状态重置和动画蓝图切换在状态重置
+	//这里比较妙的是，我把当前切换的逻辑全部都放到了蓝图中所以我只需要下面两行代码就处理两种情况
+	
+	SwitchLinkLayerAnim();
+	InteractState = EInteractState::Empty;
 }
 
 
