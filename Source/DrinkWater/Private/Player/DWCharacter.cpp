@@ -25,6 +25,7 @@ void ADWCharacter::BegintoSwithAnim()
 	{//保险吧，虽然这种情况也不可能发生
 		InteractState = EInteractState::Empty;
 		SwitchLinkLayerAnim();
+		return;
 	}
 	IInteractableInterface::Execute_OnInterAct(CurrentFocusActor,this,this);
 }
@@ -44,13 +45,26 @@ void ADWCharacter::EndtoSwithBegin()
 			if (CurrentAttachActor->Implements<UInteractableInterface>())
 			{
 				FGameplayTag IdentityTag = IInteractableInterface::Execute_GetTagFromItem(CurrentAttachActor);
-				if (!UDWBlueprintFunctionLibrary::GetItemDataAssetFromGameState(this))return;
+				if (!UDWBlueprintFunctionLibrary::GetItemDataAssetFromGameState(this))
+					{
+					InteractState = EInteractState::Empty;
+					return;
+					}
 				FDWItemInfo Iteminfo = UDWBlueprintFunctionLibrary::GetItemDataAssetFromGameState(this)->GetItemInfoByTag(IdentityTag);
-				if (!Iteminfo.Name.IsValid() || !Iteminfo.ItemPhoto)return;//如果名字是空,图片是空，那就说明返回的是个空的info，就不存，反之存.虽然这种情况逻辑上不存在，但是以防万一
+				if (!Iteminfo.Name.IsValid() || !Iteminfo.ItemPhoto)
+				{
+					InteractState = EInteractState::Empty; 
+					return;
+				}//如果名字是空,图片是空，那就说明返回的是个空的info，就不存，反之存.虽然这种情况逻辑上不存在，但是以防万一
 				FItemBag BagInfo(Iteminfo.Name,Iteminfo.ItemPhoto);
 				if (!AddItem(BagInfo))//添加,如果没添加成功就执行下面的逻辑，直接扔掉
 				{
 					CurrentAttachActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+				}
+				else
+				{
+					//这种情况要保证物体消失，但是也要考虑到后面需要对动画连接进行解绑.
+					// CurrentAttachActor->Destroy();
 				}
 			}
 		}
@@ -221,6 +235,7 @@ void ADWCharacter::PlayBeginCharInteractAnim()
 	//两种情况：实现所对可在手上或不可在手上,前面过滤了视线所对物体为空或者不是可交互物体，这里不用额外判断
 	//其实这里逻辑可以在简单一点，因为处理的两种情况都是要播放动画，这里只需要单纯播放动画，不需要判断额外，至于是拿到手上还是只一个动作就只需要在
 	//通知调用的函数中处理了
+	//对于门或柜子这种交互物体，它们的动画链接层应该是没有实现的，然后在begin中，只需要播放一个简单交互动画就行,然后就继续走
 	if(InteractState != EInteractState::Empty)return;
 	InteractState = EInteractState::Equipping;
 	if (CurrentFocusActor && CurrentFocusActor->Implements<UInteractableInterface>())
@@ -245,6 +260,7 @@ void ADWCharacter::PlayBeginCharInteractAnim()
 
 void ADWCharacter::PlayEndCharInteractAnim()
 {
+	//对于像门或者柜子这里，在end中没有动画，直接跳到begin中对新的物体进行交互
 	if(InteractState != EInteractState::Empty)return;//动画的播放必须要保证在当前是empty的情况下在进行
 
 	InteractState = EInteractState::Unequiping;
