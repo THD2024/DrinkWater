@@ -24,10 +24,12 @@ void ADWCharacter::BegintoSwithAnim()
 	if (!CurrentFocusActor || !CurrentFocusActor->Implements<UInteractableInterface>())
 	{//保险吧，虽然这种情况也不可能发生
 		InteractState = EInteractState::Empty;
-		SwitchLinkLayerAnim();
+		BeginToBindAnimLayer(CurrentFocusActor);
 		return;
 	}
 	IInteractableInterface::Execute_OnInterAct(CurrentFocusActor,this,this);
+	BeginToBindAnimLayer(CurrentFocusActor);
+	InteractState = EInteractState::Empty;
 }
 
 void ADWCharacter::EndtoSwithBegin()
@@ -39,6 +41,7 @@ void ADWCharacter::EndtoSwithBegin()
 		{
 			//直接脱落
 			CurrentAttachActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+			EndToUnbindAnimLayer(CurrentAttachActor,false);
 		}
 		else if (CurrentAttachActor->ActorHasTag(FName("PAC")))//可以收纳
 		{
@@ -59,12 +62,12 @@ void ADWCharacter::EndtoSwithBegin()
 				FItemBag BagInfo(Iteminfo.Name,Iteminfo.ItemPhoto);
 				if (!AddItem(BagInfo))//添加,如果没添加成功就执行下面的逻辑，直接扔掉
 				{
+					EndToUnbindAnimLayer(CurrentAttachActor,false);
 					CurrentAttachActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 				}
 				else
 				{
-					//这种情况要保证物体消失，但是也要考虑到后面需要对动画连接进行解绑.
-					// CurrentAttachActor->Destroy();
+					EndToUnbindAnimLayer(CurrentAttachActor,true);
 				}
 			}
 		}
@@ -81,6 +84,7 @@ void ADWCharacter::BeginPlay()
 	{
 		PC->OnInteract.AddUObject(this, &ADWCharacter::BegintoInteract);
 	}
+	FirstMeshCom = GetFirstPersonMeshComponent();
 }
 
 
@@ -242,9 +246,9 @@ void ADWCharacter::PlayBeginCharInteractAnim()
 	{
 		FGameplayTag TypeTag = IInteractableInterface::Execute_GetTagFromItem(CurrentFocusActor);
 		FCharInteractAnim AnimAsset = PlayerInterActAnimAsset->GetRelevantAnimAssetbyTag(TypeTag);
-		if (AnimAsset.BeginInteractAnim && FirstPersonMeshAnimIns)
+		if (AnimAsset.BeginInteractAnim )
 		{
-			FirstPersonMeshAnimIns->Montage_Play(AnimAsset.BeginInteractAnim,1.f);
+			PlayAnim(AnimAsset.BeginInteractAnim,1);
 			//montage动画播放后，会自己触发下一阶段，然后将状态重置为empty
 		}
 		else
@@ -281,9 +285,9 @@ void ADWCharacter::PlayEndCharInteractAnim()
 	//手中有东西的情况,播放动画，然后会等动画通知触发endtoswitchbegin
 	FGameplayTag TypeTag = IInteractableInterface::Execute_GetTagFromItem(GetCurrentAttachActor());
 	const FCharInteractAnim AnimAsset = PlayerInterActAnimAsset->GetRelevantAnimAssetbyTag(TypeTag);
-	if (AnimAsset.EndInteractAnim && FirstPersonMeshAnimIns)
+	if (AnimAsset.EndInteractAnim )
 	{
-		FirstPersonMeshAnimIns->Montage_Play(AnimAsset.EndInteractAnim,1.f);
+		PlayAnim(AnimAsset.EndInteractAnim,1);
 		//播放对应的动画，丢弃或者收纳，在通知触发的函数中需要设置物体掉落或者消失根据不同的情况
 	}
 	else//处理边界情况，如果这个currentitem没有end动画，虽然这个情况基本在后期不会发生
@@ -292,6 +296,36 @@ void ADWCharacter::PlayEndCharInteractAnim()
 		//调用后面的begin
 		PlayBeginCharInteractAnim();
 	}
+}
+
+USkeletalMeshComponent* ADWCharacter::GetFirstPersonMeshComponent()
+{
+	TArray<USkeletalMeshComponent*> Meshes;
+	GetComponents<USkeletalMeshComponent>(Meshes);
+	for (USkeletalMeshComponent* M : Meshes)
+	{
+		if (M != GetMesh() && M->GetFName() == TEXT("FirstPersonMesh"))
+		{
+			return M;
+		}
+	}
+	ensureMsgf(FirstMeshCom, TEXT("没有找到 FirstPersonMesh 组件"));
+	return nullptr;
+}
+
+bool ADWCharacter::PlayAnim(UAnimMontage* AnimMontage, float PlayRate)
+{
+	if (AnimMontage && FirstMeshCom)
+	{
+		if (FirstMeshCom->GetAnimInstance())
+		{
+			FirstMeshCom->GetAnimInstance()->Montage_Play(AnimMontage,PlayRate);
+			UE_LOG(LogTemp, Warning, TEXT("PlayAnim plays successfully"));
+			return true;
+		}
+	}
+	UE_LOG(LogTemp, Warning, TEXT("PlayAnim plays failed"));
+	return false;
 }
 
 void ADWCharacter::HandleAnimSwitch()

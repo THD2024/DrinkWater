@@ -55,7 +55,13 @@ protected:
 	bool AddItem(const FItemBag& BagInfo);
 	
 	UFUNCTION(BlueprintImplementableEvent)
+	void EndToUnbindAnimLayer(AActor* EndActor,bool CanDestory);
+	
+	UFUNCTION(BlueprintImplementableEvent)
 	void SwitchLinkLayerAnim();//时机在于交互蒙太奇播放完后
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void BeginToBindAnimLayer(AActor* BeginActor);
 	
 	UFUNCTION(BlueprintCallable)
 	AActor* GetCurrentAttachActor();//不依赖于currentitem，而是获取当前手中的item
@@ -66,6 +72,10 @@ protected:
 	
 	void PlayEndCharInteractAnim();//播放角色交互动画
 	
+	USkeletalMeshComponent* GetFirstPersonMeshComponent();
+	
+	bool PlayAnim(UAnimMontage* AnimMontage,float PlayRate);
+	
 	
 	UPROPERTY()
 	TObjectPtr<UDWAbilitySystemComponent> DwAbilitySystemComponent;
@@ -75,6 +85,9 @@ protected:
 	
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<UAnimInstance> FirstPersonMeshAnimIns;
+	
+	UPROPERTY(Transient)
+	TObjectPtr<USkeletalMeshComponent> FirstMeshCom;
 	
 	// UPROPERTY()
 	// TObjectPtr<AActor> CurrentItem;//表示当前手中拿的item
