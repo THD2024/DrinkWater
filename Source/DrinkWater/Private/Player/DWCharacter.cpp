@@ -5,7 +5,9 @@
 #include "DWGameplayTags.h"
 #include "BlueprintFunctionLibrary/DWBlueprintFunctionLibrary.h"
 #include "Data/CharInteractAnimDataAsset.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include"Interaction/InteractableInterface.h"
+#include "Kismet/GameplayStatics.h"
 #include "Player/DWPlayerController.h"
 #include "Player/DWPlayerState.h"
 #include "UI/DWHUD.h"
@@ -21,14 +23,15 @@ void ADWCharacter::BegintoSwithAnim()
 	//这里面需要保证对应物体的逻辑和动画的对应
 	//如果是拾取动画就要就要拾取，如果是交互动画，不要管,而且也只有拾取动画的情况需要切换动画蓝图
 	//这里最妙的是，我的交互接口里面包含了对于拾取和普通交互的情况，我不需要在这里细分，我直接调用交互接口就行了
-	if (!CurrentFocusActor || !CurrentFocusActor->Implements<UInteractableInterface>())
-	{//保险吧，虽然这种情况也不可能发生
+	AActor* Target = InteractItem;
+	InteractItem = nullptr;
+	if (!Target || Target != CurrentFocusActor ||!CurrentFocusActor->Implements<UInteractableInterface>())
+	{//如果当当前视线没有对准对应物体，或者对准的物体和在begin时不一样了，那么就不应该可以拾取到物体，这个时候直接return.
 		InteractState = EInteractState::Empty;
-		BeginToBindAnimLayer(CurrentFocusActor);
 		return;
 	}
-	IInteractableInterface::Execute_OnInterAct(CurrentFocusActor,this,this);
-	BeginToBindAnimLayer(CurrentFocusActor);
+	IInteractableInterface::Execute_OnInterAct(Target,this,this);
+	BeginToBindAnimLayer(Target);
 	InteractState = EInteractState::Empty;
 }
 
@@ -248,7 +251,10 @@ void ADWCharacter::PlayBeginCharInteractAnim()
 		FCharInteractAnim AnimAsset = PlayerInterActAnimAsset->GetRelevantAnimAssetbyTag(TypeTag);
 		if (AnimAsset.BeginInteractAnim )
 		{
-			PlayAnim(AnimAsset.BeginInteractAnim,1);
+			if (PlayAnim(AnimAsset.BeginInteractAnim,1))
+			{
+				InteractItem = CurrentFocusActor;
+			}
 			//montage动画播放后，会自己触发下一阶段，然后将状态重置为empty
 		}
 		else
@@ -258,6 +264,10 @@ void ADWCharacter::PlayBeginCharInteractAnim()
 			UE_LOG(LogTemp, Warning, TEXT("PlayBeginCharInteractAnim Anim Not Found"));
 			InteractState = EInteractState::Empty;
 		}
+	}
+	else//当在拾取过程中突然移开，没有对准物体，那么就需要empty
+	{
+		InteractState = EInteractState::Empty;
 	}
 	
 }
@@ -328,15 +338,17 @@ bool ADWCharacter::PlayAnim(UAnimMontage* AnimMontage, float PlayRate)
 	return false;
 }
 
-void ADWCharacter::HandleAnimSwitch()
+void ADWCharacter::UpdateHeadBot(float DeltaTime)
 {
-	//这被触发的思路也是清晰的，只有当这个物体可以被交互并且有动画的时候直接到这里来，就会被动画通知调用，动画切换逻辑就交给蓝图中的逻辑
-	//这里需要明确，这个函数触发的入口就是Playanim后，通知触发的，但是该函数与BegintoSwithAnim是同步的，不是和以前一样begintoswithanim触发这个函数
-	//这里面处理两种情况，状态重置和动画蓝图切换在状态重置
-	//这里比较妙的是，我把当前切换的逻辑全部都放到了蓝图中所以我只需要下面两行代码就处理两种情况
-	
-	SwitchLinkLayerAnim();
-	InteractState = EInteractState::Empty;
+	ADWPlayerController* PC = Cast<ADWPlayerController>(GetController());
+	if (!PC || !PC->PlayerCameraManager || !WalkShakeClass)return;
+	//保证walkshake没有被启动
+	if (!WalkShake || WalkShake->IsFinished())
+	{
+		WalkShake = PC->PlayerCameraManager->StartCameraShake(WalkShakeClass,0.f);//这里直接创建新的camerashake
+	}
+	const float TargetScale = GetCharacterMovement()->IsMovingOnGround() ? FMath::Clamp(GetVelocity().Size2D() / GetCharacterMovement()->MaxWalkSpeed,0.f,1.5f) : 0.f;
+	WalkShake->ShakeScale = FMath::FInterpTo(WalkShake->ShakeScale,TargetScale,DeltaTime,8.f);
 }
 
 
@@ -344,7 +356,7 @@ void ADWCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	EyeLookTrace();
-	
+	UpdateHeadBot(DeltaTime);
 }
 
 void ADWCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

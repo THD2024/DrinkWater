@@ -37,8 +37,7 @@ public:
 	void BegintoSwithAnim();
 	
 	void EndtoSwithBegin();//第一阶段动画触发，准备进入阶段的中转站
-	
-	void HandleAnimSwitch();//第三阶段，当begin触发后，有begin的动画触发
+
 	
 
 protected:
@@ -76,6 +75,8 @@ protected:
 	
 	bool PlayAnim(UAnimMontage* AnimMontage,float PlayRate);
 	
+	void UpdateHeadBot(float DeltaTime);
+	
 	
 	UPROPERTY()
 	TObjectPtr<UDWAbilitySystemComponent> DwAbilitySystemComponent;
@@ -89,8 +90,8 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<USkeletalMeshComponent> FirstMeshCom;
 	
-	// UPROPERTY()
-	// TObjectPtr<AActor> CurrentItem;//表示当前手中拿的item
+	UPROPERTY()
+	TObjectPtr<AActor> InteractItem;//表示在playbegin开始时视线对准的物体.
 	
 	UPROPERTY()
 	TObjectPtr<AActor> LastFocusActor;//上一个被检测到的物体
@@ -100,6 +101,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UCharInteractAnimDataAsset> PlayerInterActAnimAsset;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UCameraShakeBase> WalkShakeClass;
+	
+	UPROPERTY()
+	TObjectPtr<UCameraShakeBase> WalkShake;
 	
 	EInteractState InteractState = EInteractState::Empty;
 
