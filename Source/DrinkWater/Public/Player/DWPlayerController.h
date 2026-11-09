@@ -23,10 +23,10 @@ public:
 	ADWPlayerController();
 	
 	UPROPERTY(EditDefaultsOnly)
-	float RunSpeed = 500.f;
+	float SlowSpeed = 300.f;
 	
 	UPROPERTY(EditDefaultsOnly)
-	float WalkSpeed = 300.f;
+	float WalkSpeed = 600.f;
 	
 	FInterActDelegate OnInteract;
 	
@@ -44,10 +44,10 @@ protected:
 	void HandleCrouch(const FInputActionValue& Value);
 	
 	UFUNCTION()
-	void HandleRun(const FInputActionValue& Value);
+	void HandleSlow(const FInputActionValue& Value);
 	
 	UFUNCTION()
-	void HandleStopRun(const FInputActionValue& Value);
+	void HandleStopSlow(const FInputActionValue& Value);
 	
 	UFUNCTION()
 	void HandleInterAct(const FInputActionValue& Value);

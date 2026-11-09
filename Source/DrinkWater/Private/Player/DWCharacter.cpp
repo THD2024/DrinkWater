@@ -7,7 +7,6 @@
 #include "Data/CharInteractAnimDataAsset.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include"Interaction/InteractableInterface.h"
-#include "Kismet/GameplayStatics.h"
 #include "Player/DWPlayerController.h"
 #include "Player/DWPlayerState.h"
 #include "UI/DWHUD.h"
@@ -26,7 +25,7 @@ void ADWCharacter::BegintoSwithAnim()
 	AActor* Target = InteractItem;
 	InteractItem = nullptr;
 	if (!Target || Target != CurrentFocusActor ||!CurrentFocusActor->Implements<UInteractableInterface>())
-	{//如果当当前视线没有对准对应物体，或者对准的物体和在begin时不一样了，那么就不应该可以拾取到物体，这个时候直接return.
+	{//如果当前视线没有对准对应物体，或者对准的物体和在begin时不一样了，那么就不应该可以拾取到物体，这个时候直接return.
 		InteractState = EInteractState::Empty;
 		return;
 	}
@@ -43,6 +42,8 @@ void ADWCharacter::EndtoSwithBegin()
 		if (CurrentAttachActor->ActorHasTag(FName("PNC")))//不可收纳
 		{
 			//直接脱落
+			IInteractableInterface::Execute_SetItemPhysic(CurrentAttachActor,true);
+			CurrentAttachActor->SetActorEnableCollision(true);
 			CurrentAttachActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 			EndToUnbindAnimLayer(CurrentAttachActor,false);
 		}
@@ -66,7 +67,10 @@ void ADWCharacter::EndtoSwithBegin()
 				if (!AddItem(BagInfo))//添加,如果没添加成功就执行下面的逻辑，直接扔掉
 				{
 					EndToUnbindAnimLayer(CurrentAttachActor,false);
+					IInteractableInterface::Execute_SetItemPhysic(CurrentAttachActor,true);
+					CurrentAttachActor->SetActorEnableCollision(true);
 					CurrentAttachActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
 				}
 				else
 				{
@@ -347,7 +351,7 @@ void ADWCharacter::UpdateHeadBot(float DeltaTime)
 	{
 		WalkShake = PC->PlayerCameraManager->StartCameraShake(WalkShakeClass,0.f);//这里直接创建新的camerashake
 	}
-	const float TargetScale = GetCharacterMovement()->IsMovingOnGround() ? FMath::Clamp(GetVelocity().Size2D() / GetCharacterMovement()->MaxWalkSpeed,0.f,1.5f) : 0.f;
+	const float TargetScale = GetCharacterMovement()->IsMovingOnGround() ? FMath::Clamp(GetVelocity().Size2D() / 500,0.f,1.f) : 0.f;
 	WalkShake->ShakeScale = FMath::FInterpTo(WalkShake->ShakeScale,TargetScale,DeltaTime,8.f);
 }
 

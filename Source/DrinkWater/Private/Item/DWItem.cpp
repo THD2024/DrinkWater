@@ -3,6 +3,7 @@
 
 #include "Item/DWItem.h"
 #include "BlueprintFunctionLibrary/DWBlueprintFunctionLibrary.h"
+#include "Components/BoxComponent.h"
 #include "GameFramework/Character.h"
 #include "Player/DWCharacter.h"
 
@@ -10,16 +11,19 @@
 ADWItem::ADWItem()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	
+	ScenePivot = CreateDefaultSubobject<USceneComponent>("ScenePivot");
+	SetRootComponent(ScenePivot);
 	SphereCollision = CreateDefaultSubobject<USphereComponent>("SphereCollision");
 	//可见性通道遮挡，便于射线检测
 	SphereCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility,ECR_Block);
-	SetRootComponent(SphereCollision);
-	
 	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>("ItemMesh");
 	ItemMesh->SetupAttachment(RootComponent);
 	ItemMesh->SetRenderInDepthPass(true);
 	ItemMesh->SetCustomDepthStencilValue(1);
-	
+	ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SphereCollision->SetupAttachment(ItemMesh);
+
 	
 }
 

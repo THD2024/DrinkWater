@@ -50,6 +50,9 @@ protected:
 	TObjectPtr<USphereComponent> SphereCollision;//通用
 	
 	UPROPERTY(EditAnywhere)
+	TObjectPtr<USceneComponent> ScenePivot;
+	
+	UPROPERTY(EditAnywhere)
 	FName SocketName = FName("");
 	
 	UPROPERTY(EditAnywhere)

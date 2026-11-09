@@ -14,6 +14,7 @@ void ADWPickupItem::OnInterAct_Implementation(const AActor* OverlapActor,const A
 	//写自己单独的逻辑，直接拿到手里去
 	if (OverlapActor == nullptr)return;
 	SetActorEnableCollision(false);
+	SetPhysicalSimulation(false);
 	USkeletalMeshComponent* Mesh = OverlapActor->FindComponentByTag<USkeletalMeshComponent>(FName("FirstPersonMesh"));
 	if (Mesh == nullptr)return;
 	FAttachmentTransformRules TransformRules = FAttachmentTransformRules::SnapToTargetIncludingScale;

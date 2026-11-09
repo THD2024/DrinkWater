@@ -19,6 +19,7 @@ public:
 	FGameplayTag Item_Type_Canbinet;
 	FGameplayTag Item_Type_Banana;
 	FGameplayTag Item_Type_Flashlight;
+	FGameplayTag Item_Type_Door;
 	
 	private:
 	static FDwGameplayTags GameplayTags;

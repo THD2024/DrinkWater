@@ -38,8 +38,8 @@ void ADWPlayerController::SetupInputComponent()
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
 	{
 		EnhancedInputComponent->BindAction(Crouch,ETriggerEvent::Started,this,&ADWPlayerController::HandleCrouch);
-		EnhancedInputComponent->BindAction(Run,ETriggerEvent::Triggered,this,&ADWPlayerController::HandleRun);
-		EnhancedInputComponent->BindAction(Run,ETriggerEvent::Completed,this,&ADWPlayerController::HandleStopRun);
+		EnhancedInputComponent->BindAction(Run,ETriggerEvent::Triggered,this,&ADWPlayerController::HandleSlow);
+		EnhancedInputComponent->BindAction(Run,ETriggerEvent::Completed,this,&ADWPlayerController::HandleStopSlow);
 		EnhancedInputComponent->BindAction(InterAct,ETriggerEvent::Started,this,&ADWPlayerController::HandleInterAct);
 	}
 }
@@ -60,15 +60,15 @@ void ADWPlayerController::HandleCrouch(const FInputActionValue& Value)
 	}
 }
 
-void ADWPlayerController::HandleRun(const FInputActionValue& Value)
+void ADWPlayerController::HandleSlow(const FInputActionValue& Value)
 {
 	if (GetCharacter() && GetCharacter()->GetCharacterMovement())
 	{
-		GetCharacter()->GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+		GetCharacter()->GetCharacterMovement()->MaxWalkSpeed = SlowSpeed;
 	}
 }
 
-void ADWPlayerController::HandleStopRun(const FInputActionValue& Value)
+void ADWPlayerController::HandleStopSlow(const FInputActionValue& Value)
 {
 	if (GetCharacter() && GetCharacter()->GetCharacterMovement())
 	{
