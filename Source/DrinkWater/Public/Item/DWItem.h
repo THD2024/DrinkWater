@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Components/SphereComponent.h"
-#include "GameFramework/Actor.h"
 #include "Interaction/InteractableInterface.h"
 #include "DWItem.generated.h"
 
@@ -48,9 +47,6 @@ protected:
 	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<USphereComponent> SphereCollision;//通用
-	
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<USceneComponent> ScenePivot;
 	
 	UPROPERTY(EditAnywhere)
 	FName SocketName = FName("");
